@@ -41,6 +41,9 @@ public class ETFClient implements ClientModInitializer {
     //part of features check to optimize method processing
     public static final ObjectOpenHashSet<UUID> UUID_SKIP_FEATURES_CHECK = new ObjectOpenHashSet<>();
 
+    //data for different elytra wing texture conversion
+    public static final Object2ObjectOpenHashMap<Identifier,Identifier> IDENTIFIER_OPPOSITE_ELYTRA_IDENTIFIER = new Object2ObjectOpenHashMap<>();
+
     //marks entity has already been processed before for random texture application
     public static final ObjectOpenHashSet<UUID> UUID_ENTITY_ALREADY_CALCULATED = new ObjectOpenHashSet<>();//
 

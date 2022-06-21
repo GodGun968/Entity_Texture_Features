@@ -40,6 +40,8 @@
     "client.entity.misc.MixinTridentEntityRenderer"
   ],
   "mixins": [
+    "client.accessor.ElytraEntityModelAccessor",
+    "client.accessor.SpriteAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
