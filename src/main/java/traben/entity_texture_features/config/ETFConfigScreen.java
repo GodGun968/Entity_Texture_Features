@@ -8,12 +8,13 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import traben.entity_texture_features.client.ETFClient;
-import traben.entity_texture_features.client.utils.ETFUtils;
+import traben.entity_texture_features.ETFClient;
+import traben.entity_texture_features.texture_handlers.ETFManager;
+import traben.entity_texture_features.utils.ETFUtils2;
 
 import java.awt.*;
 
-import static traben.entity_texture_features.client.ETFClient.ETFConfigData;
+import static traben.entity_texture_features.ETFClient.ETFConfigData;
 
 // config translation rework done by @Maximum#8760
 public class ETFConfigScreen {
@@ -49,7 +50,7 @@ public class ETFConfigScreen {
             shownWarning = true;
             warningCount++;
             if (!ETFConfigData.ignoreConfigWarnings) {
-                ETFUtils.logWarn(Text.translatable("config." + ETFClient.MOD_ID + ".skinlayers_warn.text").getString(), false);
+                ETFUtils2.logWarn(Text.translatable("config." + ETFClient.MOD_ID + ".skinlayers_warn.text").getString(), false);
                 category.addEntry(entryBuilder.startTextDescription(Text.translatable("config." + ETFClient.MOD_ID + ".skinlayers_warn.text"))
                         .setColor(new Color(220, 175, 15).getRGB())
                         .build()); // Builds the option entry for cloth config
@@ -59,14 +60,14 @@ public class ETFConfigScreen {
             shownWarning = true;
             warningCount++;
             if (!ETFConfigData.ignoreConfigWarnings) {
-                ETFUtils.logWarn(Text.translatable("config." + ETFClient.MOD_ID + ".ebe_warn.text").getString(), false);
+                ETFUtils2.logWarn(Text.translatable("config." + ETFClient.MOD_ID + ".ebe_warn.text").getString(), false);
                 category.addEntry(entryBuilder.startTextDescription(Text.translatable("config." + ETFClient.MOD_ID + ".ebe_warn.text"))
                         .setColor(new Color(240, 175, 15).getRGB())
                         .build()); // Builds the option entry for cloth config
             }
         }
         if (shownWarning && ETFConfigData.ignoreConfigWarnings) {
-            ETFUtils.logMessage(warningCount + " warnings have been ignored.", false);
+            ETFUtils2.logMessage(warningCount + " warnings have been ignored.", false);
         }
 
         //allow users to bypass warning if they want to
@@ -241,11 +242,11 @@ public class ETFConfigScreen {
 
     //this needs to be here due to puzzle mod compatibility, remove this when the full release happens
     public void saveConfig() {
-        ETFUtils.saveConfig();
+        ETFUtils2.saveConfig();
     }
 
     //same as above
     public void resetVisuals() {
-        ETFUtils.resetAllETFEntityData();
+        ETFManager.reset();
     }
 }

@@ -19,7 +19,7 @@ public class ETFConfig {
 
     public boolean specialEmissiveShield = true;
     public boolean alwaysCheckVanillaEmissiveSuffix = true;
-    
+
 
     public EnchantedPotionEffectsEnum enchantedPotionEffects = EnchantedPotionEffectsEnum.NONE;
     public boolean skinFeaturesEnabled = true;
@@ -58,13 +58,26 @@ public class ETFConfig {
         }
     }
 
+    @SuppressWarnings("unused")
     public enum UpdateFrequency {
-        Never,
-        Slow,
-        Fast,
-        Instant
+        Never(-1),
+        Slow(80),
+        Average(20),
+        Fast(5),
+        Instant(1);
+
+        final private int delay;
+
+        UpdateFrequency(int delay) {
+            this.delay = delay;
+        }
+
+        public int getDelay() {
+            return delay;
+        }
     }
 
+    @SuppressWarnings("unused")
     public enum DebugLogMode {
         None,
         Log,

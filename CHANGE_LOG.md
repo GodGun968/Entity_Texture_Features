@@ -1,5 +1,17 @@
 **ETF Changelog:**
 
+[features not yet implemented in rewrite, but are planned, don't report these missing]
+- additional mob texture .properties support *(e.g. villager biome/profession textures, sheep_fur.png)*, these currently either copy the base texture variant number or use the default
+- trident features
+- elytra features
+- mooshroom custom mushrooms
+- armor texture features
+
+[ETF rewrite intended changes]
+- cloth config is no longer included in the jar and is now an optional dependency *(it is required to use the mod menu settings screen)*
+- resourcepacks with property files that do not read correctly and cause problems will now fall back to the vanilla texture instead of randomly picking and causing confusion
+- creeper1.png will now be ignored and direct to the vanilla texture or a creeper.png in the optifine folder only
+
 [dev-build.1]
 - block entity features will not render if the texture is animated as it is not supported *(no need to change settings)*
 - further optimizations to additional mob textures *(like sheep_fur.png)*
@@ -8,7 +20,7 @@
 
 [V3.1.4]
 - fixed a logic mistake causing high lag when additional mob textures *(like sheep_fur.png)* did not have the same or higher number of variations as the base texture
-- the Blocks property now also check the block the mob spawned inside of *(allowing things like water, cave_air, flowers, torches, etc. to be used, and also fixes issues with soul-sand and mud not reading correctly)*
+- the Blocks property now also check the block the mob spawned inside *(allowing things like water, cave_air, flowers, torches, etc. to be used, and also fixes issues with soul-sand and mud not reading correctly)*
 - added an option to enable / disable block entity emissive and custom textures as they currently do not support vanilla animated textures and may want to be disabled by such users
 - added some missed translation support *(Still only english atm :/)*
 

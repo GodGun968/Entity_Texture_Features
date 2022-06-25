@@ -3,7 +3,7 @@
   "id": "entity_texture_features",
   "version": "${version}",
   "name": "Entity Texture Features",
-  "description": "Optifine format compatible:\n - Random & Custom textures\n - Emissive textures\n\nWith more features such as:\n - Blinking textures\n - Player Skin support",
+  "description": "!Cloth config is required to change settings with ModMenu! \nOptifine format compatible:\n - Random & Custom textures\n - Emissive textures\n\nWith more features such as:\n - Blinking textures\n - Player Skin support",
   "authors": [
     {
       "name": "Traben",
@@ -26,7 +26,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "traben.entity_texture_features.client.ETFClient"
+      "traben.entity_texture_features.ETFClient"
     ],
     "modmenu": [
       "traben.entity_texture_features.config.ETFModMenu"
@@ -48,7 +48,8 @@
   "custom": {
     "modmenu": {
       "links": {
-        "modmenu.website": "https://www.curseforge.com/members/traben_0/projects"
+        "modmenu.website": "https://www.curseforge.com/members/traben_0/projects",
+        "modmenu.discord": "https://discord.gg/rURmwrzUcz"
       }
     }
   }
