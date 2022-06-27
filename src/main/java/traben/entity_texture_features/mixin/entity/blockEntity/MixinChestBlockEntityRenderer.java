@@ -51,10 +51,10 @@ public abstract class MixinChestBlockEntityRenderer<T extends BlockEntity & LidO
 
         if (isAnimatedTexture || !ETFConfigData.enableCustomTextures || !ETFConfigData.enableCustomBlockEntities)
             return vertices;
-        thisETFTexture = ETFManager.getETFTexture(etf$textureOfThis, etf$chestStandInDummy);
+        thisETFTexture = ETFManager.getETFTexture(etf$textureOfThis, etf$chestStandInDummy, ETFManager.TextureSource.BLOCK_ENTITY);
         //etf$textureOfThis = ETFUtils.generalProcessAndReturnAlteredTexture(etf$textureOfThis, etf$chestStandInDummy);
 
-        VertexConsumer alteredReturn = etf$vertexConsumerProviderOfThis.getBuffer(RenderLayer.getEntityCutout(thisETFTexture.getTextureIdentifier()));
+        VertexConsumer alteredReturn = etf$vertexConsumerProviderOfThis.getBuffer(RenderLayer.getEntityCutout(thisETFTexture.getTextureIdentifier(etf$chestStandInDummy)));
         return alteredReturn == null ? vertices : alteredReturn;
     }
 
@@ -90,7 +90,7 @@ public abstract class MixinChestBlockEntityRenderer<T extends BlockEntity & LidO
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/model/ModelPart;Lnet/minecraft/client/model/ModelPart;Lnet/minecraft/client/model/ModelPart;FII)V",
             at = @At(value = "TAIL"))
     private void etf$renderEmissiveChest(MatrixStack matrices, VertexConsumer vertices, ModelPart lid, ModelPart latch, ModelPart base, float openFactor, int light, int overlay, CallbackInfo ci) {
-        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities) {
+        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
             thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, lid, ETFTexture.EmissiveRenderModes.blockEntityMode());
             thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, latch, ETFTexture.EmissiveRenderModes.blockEntityMode());
             thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, base, ETFTexture.EmissiveRenderModes.blockEntityMode());

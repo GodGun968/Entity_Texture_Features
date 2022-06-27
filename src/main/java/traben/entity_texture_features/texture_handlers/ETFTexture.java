@@ -58,9 +58,21 @@ public class ETFTexture {
     private Integer blinkLength = ETFConfigData.blinkLength;
     private Integer blinkFrequency = ETFConfigData.blinkFrequency;
 
-    public ETFTexture(/*@NotNull Identifier vanillaIdentifier,*/ @NotNull Identifier variantIdentifier) {
+    private final int variantNumber;
+
+   // private final TextureSource source;
+
+    public ETFTexture(/*@NotNull Identifier vanillaIdentifier,*/ @NotNull Identifier variantIdentifier){//,TextureSource source) {
         //this.vanillaIdentifier = vanillaIdentifier;
+        //this.source = source;
         this.thisIdentifier = variantIdentifier;
+        Pattern pattern = Pattern.compile("\\d+(?=\\.png)");
+        Matcher matcher = pattern.matcher(variantIdentifier.getPath());
+        if (matcher.find()) {
+            this.variantNumber = Integer.parseInt(matcher.group());
+        }else{
+            this.variantNumber = 0;
+        }
         setupBlinking();
         setupEmissives();
 
@@ -219,23 +231,19 @@ public class ETFTexture {
 
     @NotNull
     Identifier getFeatureTexture(Identifier vanillaFeatureTexture) {
-        //todo will be different for villagers
+
         if (FEATURE_TEXTURE_MAP.containsKey(vanillaFeatureTexture)) {
             return FEATURE_TEXTURE_MAP.get(vanillaFeatureTexture);
         }
         //otherwise we need to find what it is and add to map
-
-        Pattern pattern = Pattern.compile("\\d+(?=\\.png)");
-        Matcher matcher = pattern.matcher(this.thisIdentifier.getPath());
-        if (matcher.find()) {
-            int thisVariantSuffix = Integer.parseInt(matcher.group());
-            ETFDirectory directory = ETFDirectory.getDirectoryOf(thisIdentifier);
+        ETFDirectory directory = ETFDirectory.getDirectoryOf(thisIdentifier);
+        if (variantNumber != 0){
             Identifier possibleFeatureVariantIdentifier =
                     ETFDirectory.getIdentiferAsDirectory(
                             ETFUtils2.replaceIdentifier(
                                     vanillaFeatureTexture,
                                     ".png",
-                                    thisVariantSuffix + ".png")
+                                    variantNumber + ".png")
                             , directory);
             Optional<Resource> possibleResource = MinecraftClient.getInstance().getResourceManager().getResource(possibleFeatureVariantIdentifier);
             if (possibleResource.isPresent()) {
@@ -246,22 +254,25 @@ public class ETFTexture {
         }
         //here we have no number and are likely vanilla texture or something went wrong in which case vanilla anyway
         //ETFUtils2.logWarn("getFeatureTexture() either vanilla or failed");
+        ETFDirectory tryDirectory = ETFDirectory.getDirectoryOf(vanillaFeatureTexture);
+        if (tryDirectory == directory || tryDirectory == ETFDirectory.VANILLA) {
+            //if same directory as main texture or is vanilla texture use it
+            Identifier tryDirectoryVariant = ETFDirectory.getIdentiferAsDirectory(vanillaFeatureTexture,tryDirectory);
+            FEATURE_TEXTURE_MAP.put(vanillaFeatureTexture, tryDirectoryVariant);
+            return tryDirectoryVariant;
+        }
+        //final fallback just use vanilla
         FEATURE_TEXTURE_MAP.put(vanillaFeatureTexture, vanillaFeatureTexture);
-        return vanillaFeatureTexture;
+        return  vanillaFeatureTexture;
+
     }
 
-    public Identifier getTextureIdentifierTryPatchedOnly() {
-        return getTextureIdentifier(null, true);
-    }
+
 
     public Identifier getTextureIdentifierTryPatchedOnly(@Nullable LivingEntity entity) {
         return getTextureIdentifier(entity, true);
     }
 
-    @NotNull
-    public Identifier getTextureIdentifier() {
-        return getTextureIdentifier(null, false);
-    }
 
     @NotNull
     public Identifier getTextureIdentifier(LivingEntity entity) {
@@ -484,4 +495,5 @@ public class ETFTexture {
             };
         }
     }
+
 }

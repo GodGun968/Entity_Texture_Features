@@ -1,7 +1,7 @@
 package traben.entity_texture_features.texture_handlers;
 
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -53,7 +53,7 @@ public enum ETFDirectory {
     private static ETFDirectory findDirectoryOf(Identifier vanillaIdentifier) {
         //it is not cached and does not need to be
         //may either be properties or image
-        ReferenceArrayList<ETFDirectory> foundDirectories = new ReferenceArrayList<>();
+        ObjectArrayList<ETFDirectory> foundDirectories = new ObjectArrayList<>();
         ResourceManager resources = MinecraftClient.getInstance().getResourceManager();
 
         if (resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, VANILLA)).isPresent())
@@ -81,6 +81,7 @@ public enum ETFDirectory {
                 Optional<Resource> resource = resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, directory));
                 resource.ifPresent(value -> resourcePackNames.put(value.getResourcePackName(), directory));
             }
+
             String returnedPack = ETFUtils2.returnNameOfHighestPackFrom(resourcePackNames.keySet());
             if (returnedPack != null) {
                 return resourcePackNames.get(returnedPack);

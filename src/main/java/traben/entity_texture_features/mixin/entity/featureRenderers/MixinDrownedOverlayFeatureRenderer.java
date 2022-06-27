@@ -48,8 +48,8 @@ public abstract class MixinDrownedOverlayFeatureRenderer<T extends DrownedEntity
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/feature/DrownedOverlayFeatureRenderer;render(Lnet/minecraft/client/render/entity/model/EntityModel;Lnet/minecraft/client/render/entity/model/EntityModel;Lnet/minecraft/util/Identifier;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFFFFF)V"))
     private Identifier etf$returnAlteredTexture(Identifier texture) {
 
-        thisETFTexture = ETFManager.getETFTextureOfFeature(etf$entity, texture);
-        return thisETFTexture.getTextureIdentifier();
+        thisETFTexture = ETFManager.getETFTexture(texture, etf$entity, ETFManager.TextureSource.ENTITY_FEATURE);
+        return thisETFTexture.getTextureIdentifier(etf$entity);
 
     }
 
@@ -60,7 +60,7 @@ public abstract class MixinDrownedOverlayFeatureRenderer<T extends DrownedEntity
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, T drownedEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci) {
         //UUID id = livingEntity.getUuid();
 
-        thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, model);
+        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, model);
 
     }
 

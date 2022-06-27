@@ -10,6 +10,7 @@ import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.mob.SpiderEntity;
@@ -50,7 +51,7 @@ public abstract class MixinEyesFeatureRenderer<T extends Entity, M extends Entit
             }
 
             if (check != null) {
-                Identifier altered = ETFManager.getETFTextureOfFeature(entity, new Identifier(check)).getTextureIdentifier();
+                Identifier altered = ETFManager.getETFTexture(new Identifier(check), entity, ETFManager.TextureSource.ENTITY_FEATURE).getTextureIdentifier((LivingEntity) entity);
                 //if the feature has changed to a variant perform the custom render and cancel the vanilla render
                 if (!altered.toString().equals(check)) {
                     VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEyes(altered));

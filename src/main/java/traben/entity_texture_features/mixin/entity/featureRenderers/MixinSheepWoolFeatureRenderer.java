@@ -40,7 +40,7 @@ public abstract class MixinSheepWoolFeatureRenderer extends FeatureRenderer<Shee
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, SheepEntity sheepEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci, MinecraftClient minecraftClient, boolean bl, VertexConsumer vertexConsumer) {
         //UUID id = livingEntity.getUuid();
         //todo no colour logic here for now, packs can set textures for this with the color properties anyway
-        thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
+        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
     }
 
     @Inject(
@@ -56,8 +56,8 @@ public abstract class MixinSheepWoolFeatureRenderer extends FeatureRenderer<Shee
                     target = "Lnet/minecraft/client/render/entity/feature/SheepWoolFeatureRenderer;render(Lnet/minecraft/client/render/entity/model/EntityModel;Lnet/minecraft/client/render/entity/model/EntityModel;Lnet/minecraft/util/Identifier;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFFFFF)V")
             , index = 2)
     private Identifier etf$returnAlteredTexture(Identifier texture) {
-        thisETFTexture = ETFManager.getETFTextureOfFeature(etf$entity, SKIN);
-        return thisETFTexture.getTextureIdentifier();
+        thisETFTexture = ETFManager.getETFTexture(SKIN, etf$entity, ETFManager.TextureSource.ENTITY_FEATURE);
+        return thisETFTexture.getTextureIdentifier(etf$entity);
     }
 }
 

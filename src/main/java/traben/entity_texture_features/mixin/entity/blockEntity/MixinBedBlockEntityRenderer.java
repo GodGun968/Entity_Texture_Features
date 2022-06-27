@@ -44,12 +44,12 @@ public abstract class MixinBedBlockEntityRenderer implements BlockEntityRenderer
 
         if (isAnimatedTexture || !ETFConfigData.enableCustomTextures || !ETFConfigData.enableCustomBlockEntities)
             return vertices;
-        thisETFTexture = ETFManager.getETFTexture(etf$textureOfThis, etf$bedStandInDummy);
+        thisETFTexture = ETFManager.getETFTexture(etf$textureOfThis, etf$bedStandInDummy, ETFManager.TextureSource.BLOCK_ENTITY);
 
 
         //return thisETFTexture.getTextureIdentifier();
 
-        VertexConsumer alteredReturn = etf$vertexConsumerProviderOfThis.getBuffer(RenderLayer.getEntityCutout(thisETFTexture.getTextureIdentifier()));
+        VertexConsumer alteredReturn = etf$vertexConsumerProviderOfThis.getBuffer(RenderLayer.getEntityCutout(thisETFTexture.getTextureIdentifier(etf$bedStandInDummy)));
         return alteredReturn == null ? vertices : alteredReturn;
     }
 
@@ -85,7 +85,7 @@ public abstract class MixinBedBlockEntityRenderer implements BlockEntityRenderer
 
         //System.out.println("bed "+nameSpace +":"+texturePath);
         //Identifier textureID = new Identifier();
-        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities) {
+        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
             //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, etf$textureOfThis, part, true);
             thisETFTexture.renderEmissive(matrices, vertexConsumers, part, ETFTexture.EmissiveRenderModes.blockEntityMode());
         }

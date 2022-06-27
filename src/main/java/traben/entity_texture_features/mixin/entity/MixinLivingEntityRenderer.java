@@ -56,7 +56,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
 
 //            Identifier texture = etf$returnAlteredTexture((LivingEntityRenderer) (Object) this, livingEntity);
 //            ETFUtils.generalEmissiveRenderModel(matrixStack, vertexConsumerProvider, texture, this.getModel());
-            thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, this.getModel());
+            if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, this.getModel());
 
         } else if (ETFConfigData.skinFeaturesEnabled) { // is a player
             customPlayerModel = new ETFCustomPlayerFeatureModel<>();
@@ -89,7 +89,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
         if (entity instanceof PlayerEntity) {
             return getTexture(entity);
         }
-        thisETFTexture = ETFManager.getETFTexture(getTexture(entity), entity);
+        thisETFTexture = ETFManager.getETFTexture(getTexture(entity), entity, ETFManager.TextureSource.ENTITY);
         //        System.out.println("texturestate="+thisETFTexture.currentTextureState.toString());
 //        if(use == null){
 //            System.out.println(thisETFTexture);

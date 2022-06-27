@@ -49,8 +49,8 @@ public abstract class MixinHorseArmorFeatureRenderer extends FeatureRenderer<Hor
     private Identifier etf$returnAlteredTexture(Identifier texture) {
 
 
-        thisETFTexture = ETFManager.getETFTextureOfFeature(etf$entity, texture);
-        return thisETFTexture.getTextureIdentifier();
+        thisETFTexture = ETFManager.getETFTexture(texture, etf$entity, ETFManager.TextureSource.ENTITY_FEATURE);
+        return thisETFTexture.getTextureIdentifier(etf$entity);
 
     }
 
@@ -62,7 +62,7 @@ public abstract class MixinHorseArmorFeatureRenderer extends FeatureRenderer<Hor
         //UUID id = livingEntity.getUuid();
 
 
-        thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, model);
+        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, model);
     }
 
 }

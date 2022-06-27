@@ -37,6 +37,8 @@ public class ETFConfig {
     public boolean enableElytra = true;
     public boolean elytraThicknessFix = false;
 
+    public double advanced_IncreaseCacheSizeModifier = 1.0;
+
     public DebugLogMode debugLoggingMode = DebugLogMode.None;
 
     //string name stuff more indepth than other enum for backwards compatibility

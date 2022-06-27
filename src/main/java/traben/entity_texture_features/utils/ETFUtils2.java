@@ -43,7 +43,7 @@ public class ETFUtils2 {
             String packName = pack.getName();
             if (packNameList.contains(packName)) {
                 //simply loops through packs and removes them from the list to check
-                if (packNameList.size() == 1) {
+                if (packNameList.size() <= 1) {
                     //if there is only 1 left we have our winner in the highest resource-pack
                     return (String) packNameList.toArray()[0];
                 } else {

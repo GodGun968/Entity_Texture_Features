@@ -9,6 +9,7 @@ import net.minecraft.entity.mob.ShulkerEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.util.DyeColor;
+import org.jetbrains.annotations.NotNull;
 import traben.entity_texture_features.utils.ETFUtils2;
 
 import java.util.ArrayList;
@@ -139,23 +140,24 @@ public class ETFTexturePropertyCase {
         if (!ETFConfigData.restrictUpdateProperties) {
             isUpdate = false;
         }
+        ETFCacheKey CacheId = new ETFCacheKey(entity.getUuid(),null);
 
-        if (!ENTITY_SPAWN_CONDITIONS_CACHE.containsKey(entity.getUuid())) {
-            ENTITY_SPAWN_CONDITIONS_CACHE.put(entity.getUuid(), readAllSpawnConditionsForCache(entity));
-        }
         ObjectImmutableList<String> spawnConditions = null;
         if (ETFConfigData.restrictUpdateProperties) {
-            spawnConditions = (ENTITY_SPAWN_CONDITIONS_CACHE.get(entity.getUuid()));
-        }
-        if (spawnConditions == null) {
-            spawnConditions = ObjectImmutableList.of(new String[]{null, null, null, null, null, null, null});
+            if (ENTITY_SPAWN_CONDITIONS_CACHE.containsKey(CacheId)) {
+                spawnConditions = (ENTITY_SPAWN_CONDITIONS_CACHE.get(CacheId));
+            } else {
+                spawnConditions = readAllSpawnConditionsForCache(entity);
+                ENTITY_SPAWN_CONDITIONS_CACHE.put(CacheId, spawnConditions);
+            }
         }
 
 
-        boolean wasEntityTestedByAnUpdateableProperty = false;
+
+        boolean wasEntityTestedByAnUpdatableProperty = false;
         boolean doesEntityMeetThisCaseTest = true;
         if (BIOME_VALUES.length > 0) {
-            if (!ETFConfigData.restrictBiome) wasEntityTestedByAnUpdateableProperty = true;
+            if (!ETFConfigData.restrictBiome) wasEntityTestedByAnUpdatableProperty = true;
             //String entityBiome = entity.world.getBiome(entity.getBlockPos()).getCategory().getName();//has no caps// desert
             //1.18.1 old mapping String entityBiome = Objects.requireNonNull(entity.world.getRegistryManager().get(Registry.BIOME_KEY).getId(entity.world.getBiome(entity.getBlockPos()))).toString();
             //not an exact grabbing of the name, but it works for the contains check so no need for more processing
@@ -189,7 +191,7 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && NAME_STRINGS.length > 0) {
-            wasEntityTestedByAnUpdateableProperty = true;
+            wasEntityTestedByAnUpdatableProperty = true;
             if (entity.hasCustomName()) {
                 String entityName = Objects.requireNonNull(entity.getCustomName()).getString();
 
@@ -251,7 +253,7 @@ public class ETFTexturePropertyCase {
             }
         }
         if (doesEntityMeetThisCaseTest && HEIGHT_Y_VALUES.length > 0) {
-            if (!ETFConfigData.restrictHeight) wasEntityTestedByAnUpdateableProperty = true;
+            if (!ETFConfigData.restrictHeight) wasEntityTestedByAnUpdatableProperty = true;
             int entityHeight;
             if (isUpdate && ETFConfigData.restrictHeight && ETFConfigData.restrictUpdateProperties) {
                 entityHeight = Integer.parseInt(spawnConditions.get(1).trim());
@@ -269,7 +271,7 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && PROFESSION_VALUES.length > 0 && entity instanceof VillagerEntity) {
-            wasEntityTestedByAnUpdateableProperty = true;
+            wasEntityTestedByAnUpdatableProperty = true;
             String entityProfession = ((VillagerEntity) entity).getVillagerData().getProfession().toString().toLowerCase().replace("minecraft:", "");
             int entityProfessionLevel = ((VillagerEntity) entity).getVillagerData().getLevel();
             boolean check = false;
@@ -320,7 +322,7 @@ public class ETFTexturePropertyCase {
 
         if (doesEntityMeetThisCaseTest && COLOR_VALUES.length > 0) {
 
-            wasEntityTestedByAnUpdateableProperty = true;
+            wasEntityTestedByAnUpdatableProperty = true;
             String entityColor;
             if (entity instanceof WolfEntity wolf) {
                 entityColor = wolf.getCollarColor().asString().toLowerCase();
@@ -365,12 +367,12 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && IS_BABY != 0) {
-            wasEntityTestedByAnUpdateableProperty = true;
+            wasEntityTestedByAnUpdatableProperty = true;
             doesEntityMeetThisCaseTest = (IS_BABY == 1) == entity.isBaby();
             //System.out.println("baby " + doesEntityMeetThisCaseTest);
         }
         if (doesEntityMeetThisCaseTest && WEATHER_TYPE != 0) {
-            if (!ETFConfigData.restrictWeather) wasEntityTestedByAnUpdateableProperty = true;
+            if (!ETFConfigData.restrictWeather) wasEntityTestedByAnUpdatableProperty = true;
             boolean raining;
             boolean thundering;
             if (isUpdate && ETFConfigData.restrictWeather && ETFConfigData.restrictUpdateProperties) {
@@ -392,7 +394,7 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && HEALTH_RANGE_STRINGS.length > 0) {
-            wasEntityTestedByAnUpdateableProperty = true;
+            wasEntityTestedByAnUpdatableProperty = true;
             //float entityHealth = entity.getHealth();
             boolean check = false;
             //always check percentage
@@ -417,7 +419,7 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && MOON_PHASE_VALUES.length > 0) {
-            if (!ETFConfigData.restrictMoonPhase) wasEntityTestedByAnUpdateableProperty = true;
+            if (!ETFConfigData.restrictMoonPhase) wasEntityTestedByAnUpdatableProperty = true;
             int moonPhase;
             if (isUpdate && ETFConfigData.restrictMoonPhase && ETFConfigData.restrictUpdateProperties) {
                 moonPhase = Integer.parseInt(spawnConditions.get(5).trim());
@@ -435,7 +437,7 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && TIME_RANGE_STRINGS.length > 0) {
-            if (!ETFConfigData.restrictDayTime) wasEntityTestedByAnUpdateableProperty = true;
+            if (!ETFConfigData.restrictDayTime) wasEntityTestedByAnUpdatableProperty = true;
             long time;
             boolean check = false;
             if (isUpdate && ETFConfigData.restrictDayTime && ETFConfigData.restrictUpdateProperties) {
@@ -463,7 +465,7 @@ public class ETFTexturePropertyCase {
             doesEntityMeetThisCaseTest = check;
         }
         if (doesEntityMeetThisCaseTest && BLOCK_VALUES.length > 0) {
-            if (!ETFConfigData.restrictBlock) wasEntityTestedByAnUpdateableProperty = true;
+            if (!ETFConfigData.restrictBlock) wasEntityTestedByAnUpdatableProperty = true;
             //check block
 
             String[] entityOnBlocks;
@@ -529,7 +531,7 @@ public class ETFTexturePropertyCase {
             }
         }
         if (doesEntityMeetThisCaseTest && TEAM_VALUES.length > 0) {
-            wasEntityTestedByAnUpdateableProperty = true;
+            wasEntityTestedByAnUpdatableProperty = true;
             if (entity.getScoreboardTeam() != null) {
                 String teamName = entity.getScoreboardTeam().getName();
 
@@ -575,7 +577,7 @@ public class ETFTexturePropertyCase {
         }
 
 
-        if (wasEntityTestedByAnUpdateableProperty) {
+        if (wasEntityTestedByAnUpdatableProperty) {
             UUID_CaseHasUpdateablesCustom.put(entity.getUuid(), true);
         }
         return doesEntityMeetThisCaseTest;
@@ -593,7 +595,10 @@ public class ETFTexturePropertyCase {
         return randomReliable;
     }
 
-    private ObjectImmutableList<String> readAllSpawnConditionsForCache(LivingEntity entity) {
+    @NotNull
+    private ObjectImmutableList<String> readAllSpawnConditionsForCache(@NotNull LivingEntity entity) {
+        //check to speed up processing time
+
         //must be 6 length
         // 0 biome
         // 1 height
@@ -601,22 +606,24 @@ public class ETFTexturePropertyCase {
         // 3 weather
         // 4 daytime
         // 5 moon-phase
-        String biome = !ETFConfigData.restrictBiome ? null : entity.world.getBiome(entity.getBlockPos()).getKey().toString().split("\s/\s")[1].replaceAll("[^\\da-zA-Z_:-]", "");
-        String height = !ETFConfigData.restrictHeight ? null : "" + entity.getBlockY();
-        String block = !ETFConfigData.restrictBlock ? null : entity.world.getBlockState(entity.getBlockPos().down()).toString()
+        // 6 block2
+        //checks to speed up runtime as values potentially won't be used but can't be null
+        @NotNull String biome = !ETFConfigData.restrictBiome ? "" : entity.world.getBiome(entity.getBlockPos()).getKey().toString().split("\s/\s")[1].replaceAll("[^\\da-zA-Z_:-]", "");
+        @NotNull String height = !ETFConfigData.restrictHeight ? "" : "" + entity.getBlockY();
+        @NotNull String block = !ETFConfigData.restrictBlock ? "" : entity.world.getBlockState(entity.getBlockPos().down()).toString()
                 .replaceFirst("minecraft:", "")
                 .replaceFirst("Block\\{", "")
                 .replaceFirst("}.*", "").toLowerCase();
         //check the block the mob is inside also
         // this solves issues with soul sand and mud being undetected
-        String block2 = !ETFConfigData.restrictBlock ? null : entity.world.getBlockState(entity.getBlockPos()).toString()
+        @NotNull String block2 = !ETFConfigData.restrictBlock ? "" : entity.world.getBlockState(entity.getBlockPos()).toString()
                 .replaceFirst("minecraft:", "")
                 .replaceFirst("Block\\{", "")
                 .replaceFirst("}.*", "").toLowerCase();
 
-        String weather = !ETFConfigData.restrictWeather ? null : (entity.world.isRaining() ? "1" : "0") + "-" + (entity.world.isThundering() ? "1" : "0");
-        String time = !ETFConfigData.restrictDayTime ? null : "" + entity.world.getTimeOfDay();
-        String moon = !ETFConfigData.restrictMoonPhase ? null : "" + entity.world.getMoonPhase();
+        @NotNull String weather = !ETFConfigData.restrictWeather ? "" : (entity.world.isRaining() ? "1" : "0") + "-" + (entity.world.isThundering() ? "1" : "0");
+        @NotNull String time = !ETFConfigData.restrictDayTime ? "" : "" + entity.world.getTimeOfDay();
+        @NotNull String moon = !ETFConfigData.restrictMoonPhase ? "" : "" + entity.world.getMoonPhase();
         return ObjectImmutableList.of(biome, height, block, weather, time, moon, block2);
     }
 }

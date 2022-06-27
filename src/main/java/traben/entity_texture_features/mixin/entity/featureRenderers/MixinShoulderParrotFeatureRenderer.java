@@ -67,15 +67,15 @@ public abstract class MixinShoulderParrotFeatureRenderer<T extends PlayerEntity>
         //System.out.println(id);
         parrot.setUuid(id);
 
-        thisETFTexture = ETFManager.getETFTextureOfFeature(parrot, ParrotEntityRenderer.TEXTURES[parrotNBT.getInt("Variant")]);
-        return thisETFTexture.getTextureIdentifier();
+        thisETFTexture = ETFManager.getETFTexture(ParrotEntityRenderer.TEXTURES[parrotNBT.getInt("Variant")], parrot, ETFManager.TextureSource.ENTITY);
+        return thisETFTexture.getTextureIdentifier(parrot);
     }
 
     @Inject(method = "method_17958(Lnet/minecraft/client/util/math/MatrixStack;ZLnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/nbt/NbtCompound;IFFFFLnet/minecraft/entity/EntityType;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/ParrotEntityModel;poseOnShoulder(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFFI)V",
                     shift = At.Shift.AFTER))
     private <M extends Entity> void etf$applyEmissive(MatrixStack matrixStack, boolean bl, PlayerEntity playerEntity, VertexConsumerProvider vertexConsumerProvider, NbtCompound nbtCompound, int i, float f, float g, float h, float j, EntityType<M> type, CallbackInfo ci) {
-        thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, model);
+        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, model);
     }
 
 }

@@ -32,7 +32,7 @@ public abstract class MixinShulkerHeadFeatureRenderer extends FeatureRenderer<Sh
                     shift = At.Shift.AFTER))
     private void etf$applyRenderFeatures(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, ShulkerEntity shulkerEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci) {
 
-        thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
+        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
     }
 
     @Inject(
@@ -47,7 +47,7 @@ public abstract class MixinShulkerHeadFeatureRenderer extends FeatureRenderer<Sh
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderLayer;getEntitySolid(Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/render/RenderLayer;"))
     private Identifier etf$returnAlteredTexture(Identifier texture) {
 
-        thisETFTexture = ETFManager.getETFTextureOfFeature(etf$shulker, texture);
-        return thisETFTexture.getTextureIdentifier();
+        thisETFTexture = ETFManager.getETFTexture(texture, etf$shulker, ETFManager.TextureSource.ENTITY);
+        return thisETFTexture.getTextureIdentifier(etf$shulker);
     }
 }
