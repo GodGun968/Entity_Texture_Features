@@ -10,6 +10,7 @@ import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.util.DyeColor;
 import org.jetbrains.annotations.NotNull;
+import traben.entity_texture_features.utils.ETFCacheKey;
 import traben.entity_texture_features.utils.ETFUtils2;
 
 import java.util.ArrayList;

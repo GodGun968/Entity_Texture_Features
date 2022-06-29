@@ -8,7 +8,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourcePack;
 import net.minecraft.text.LiteralTextContent;
@@ -28,7 +27,7 @@ import java.util.Properties;
 
 import static traben.entity_texture_features.ETFClient.ETFConfigData;
 
-public class ETFUtils2 {
+public abstract class ETFUtils2 {
     @NotNull
     public static Identifier replaceIdentifier(Identifier id, String regex, String replace) {
         return new Identifier(id.getNamespace(), id.getPath().replaceFirst(regex, replace));
@@ -217,9 +216,9 @@ public class ETFUtils2 {
     }
 
     public static void registerNativeImageToIdentifier(NativeImage img, Identifier identifier) {
-        TextureManager textureManager = MinecraftClient.getInstance().getTextureManager();
         NativeImageBackedTexture bob = new NativeImageBackedTexture(img);
-        textureManager.registerTexture(identifier, bob);
+        MinecraftClient.getInstance().getTextureManager().registerTexture(identifier, bob);
+        //MinecraftClient.getInstance().getResourceManager().
 
     }
 }

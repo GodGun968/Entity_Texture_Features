@@ -87,7 +87,7 @@ public abstract class MixinBedBlockEntityRenderer implements BlockEntityRenderer
         //Identifier textureID = new Identifier();
         if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
             //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, etf$textureOfThis, part, true);
-            thisETFTexture.renderEmissive(matrices, vertexConsumers, part, ETFTexture.EmissiveRenderModes.blockEntityMode());
+            thisETFTexture.renderEmissive(matrices, vertexConsumers, part, ETFManager.EmissiveRenderModes.blockEntityMode());
         }
         //VertexConsumer cons = vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(new Identifier(nameSpace,texturePath), true));
         //part.render(matrices,cons,15728640,overlay);

@@ -4,6 +4,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.*;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.MooshroomMushroomFeatureRenderer;
 import net.minecraft.client.render.model.BakedModel;
@@ -15,6 +17,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import traben.entity_texture_features.texture_handlers.ETFManager;
+import traben.entity_texture_features.texture_handlers.ETFTexture;
 import traben.entity_texture_features.utils.ETFUtils2;
 
 import static traben.entity_texture_features.ETFClient.*;
@@ -25,9 +29,9 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
 
     private static final Identifier RED_SHROOM = new Identifier("textures/entity/cow/red_mushroom.png");
     private static final Identifier BROWN_SHROOM = new Identifier("textures/entity/cow/brown_mushroom.png");
-    private static final Identifier RED_SHROOM_ALT = new Identifier(MOD_ID, "textures/entity/cow/red_mushroom_alt.png");
-    private static final Identifier BROWN_SHROOM_ALT = new Identifier(MOD_ID, "textures/entity/cow/brown_mushroom_alt.png");
 
+    private static Identifier redEmissive = null;
+    private  static  Identifier brownEmissive = null;
 
     private static final ModelPart[] shroomAsEntityModel = getModelData();
 
@@ -47,22 +51,22 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
         //enable custom mooshroom mushrooms
         if (ETFConfigData.enableCustomTextures) {
             if (mushroomState.isOf(Blocks.RED_MUSHROOM)) {
-                switch (mooshroomRedCustomShroom) {
+                switch (ETFManager.mooshroomRedCustomShroom) {
                     case 1:
                         return null;
                     case 2:
                         return true;
                     default: {
                         if (MinecraftClient.getInstance().getResourceManager().getResource(RED_SHROOM).isPresent()) {
-                            mooshroomRedCustomShroom = 2;
+                            ETFManager.mooshroomRedCustomShroom = 2;
                             return prepareMushroomTextures(true);
                         } else {
-                            mooshroomRedCustomShroom = 1;
+                            ETFManager.mooshroomRedCustomShroom = 1;
                         }
                     }
                 }
             } else if (mushroomState.isOf(Blocks.BROWN_MUSHROOM)) {
-                switch (mooshroomBrownCustomShroom) {
+                switch (ETFManager.mooshroomBrownCustomShroom) {
                     case 1:
                         return null;
                     case 2:
@@ -70,10 +74,10 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
                     default: {
                         if (MinecraftClient.getInstance().getResourceManager().getResource(BROWN_SHROOM).isPresent()) {
 
-                            mooshroomBrownCustomShroom = 2;
+                            ETFManager.mooshroomBrownCustomShroom = 2;
                             return prepareMushroomTextures(false);
                         } else {
-                            mooshroomBrownCustomShroom = 1;
+                            ETFManager.mooshroomBrownCustomShroom = 1;
                         }
                     }
                 }
@@ -92,6 +96,7 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
         Identifier idOfOriginal = isRed ? RED_SHROOM : BROWN_SHROOM;
         String suffix = null;
         if (doingEmissive) {
+            boolean found = false;
             for (String str :
                     EMISSIVE_SUFFIX_LIST) {
                 Identifier test = new Identifier(idOfOriginal.toString().replace(".png", str + ".png"));
@@ -99,71 +104,91 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
                 if (MinecraftClient.getInstance().getResourceManager().getResource(test).isPresent()) {
                     suffix = str;
                     idOfOriginal = test;
+                    found = true;
                     break;
                 }
+            }
+            if(!found){
+                return null;
             }
         }
         //System.out.println("found="+suffix);
         NativeImage originalImagePreFlip = ETFUtils2.getNativeImageElseNull(idOfOriginal);
-        //todo rewrite
-//        if (originalImagePreFlip != null) {
-//            try {
-//                //flip vertically
-//                NativeImage flippedOriginalImage = ETFUtils.emptyNativeImage(originalImagePreFlip.getWidth(), originalImagePreFlip.getHeight());
-//                for (int x = 0; x < flippedOriginalImage.getWidth(); x++) {
-//                    for (int y = 0; y < flippedOriginalImage.getHeight(); y++) {
-//                        flippedOriginalImage.setColor(x, y, originalImagePreFlip.getColor(x, originalImagePreFlip.getHeight() - 1 - y));
-//                    }
-//                }
-//                //mirror 2x wide texture for entity rendering
-//                NativeImage newImage = ETFUtils.emptyNativeImage(flippedOriginalImage.getWidth() * 2, flippedOriginalImage.getHeight());
-//                for (int x = 0; x < newImage.getWidth(); x++) {
-//                    for (int y = 0; y < newImage.getHeight(); y++) {
-//                        if (x < flippedOriginalImage.getWidth()) {
-//                            newImage.setColor(x, y, flippedOriginalImage.getColor(x, y));
-//                        } else {
-//                            newImage.setColor(x, y, flippedOriginalImage.getColor(flippedOriginalImage.getWidth() - 1 - (x - flippedOriginalImage.getWidth()), y));
-//                        }
-//                    }
-//                }
-//                Identifier idOfNew = isRed ? RED_SHROOM_ALT : BROWN_SHROOM_ALT;
-//                if (doingEmissive && suffix != null) {
-//                    Identifier emissive = new Identifier(idOfNew.toString().replace(".png", suffix + ".png"));
-//                    ETFUtils.registerNativeImageToIdentifier(newImage, emissive);
-//                    PATH_EMISSIVE_TEXTURE_IDENTIFIER.put(idOfNew.toString(), emissive);
-//                } else {
-//                    ETFUtils.registerNativeImageToIdentifier(newImage, idOfNew);
-//                }
-//                //System.out.println("id="+idOfNew);
-//
-//
-//                //do a pass for the emissive texture if present return ignored
-//                if (!doingEmissive)
-//                    prepareMushroomTextures(isRed, true);
-//
-//                return isRed;
-//            } catch (Exception e) {
-//                ETFUtils.logError("Mooshroom custom mushroom texture could not be loaded. " + e);
-//            }
-//        }
+
+        if (originalImagePreFlip != null) {
+            try {
+                //flip vertically
+                NativeImage flippedOriginalImage = ETFUtils2.emptyNativeImage(originalImagePreFlip.getWidth(), originalImagePreFlip.getHeight());
+                for (int x = 0; x < flippedOriginalImage.getWidth(); x++) {
+                    for (int y = 0; y < flippedOriginalImage.getHeight(); y++) {
+                        flippedOriginalImage.setColor(x, y, originalImagePreFlip.getColor(x, originalImagePreFlip.getHeight() - 1 - y));
+                    }
+                }
+                //mirror 2x wide texture for entity rendering
+                NativeImage newImage = ETFUtils2.emptyNativeImage(flippedOriginalImage.getWidth() * 2, flippedOriginalImage.getHeight());
+                for (int x = 0; x < newImage.getWidth(); x++) {
+                    for (int y = 0; y < newImage.getHeight(); y++) {
+                        if (x < flippedOriginalImage.getWidth()) {
+                            newImage.setColor(x, y, flippedOriginalImage.getColor(x, y));
+                        } else {
+                            newImage.setColor(x, y, flippedOriginalImage.getColor(flippedOriginalImage.getWidth() - 1 - (x - flippedOriginalImage.getWidth()), y));
+                        }
+                    }
+                }
+                Identifier idOfNew = isRed ? new Identifier("etf","red_shroom_alt.png") : new Identifier("etf","brown_shroom_alt.png");
+                if (doingEmissive && suffix != null) {
+                    Identifier emissive = new Identifier(idOfNew.toString().replace(".png", suffix + ".png"));
+                    ETFUtils2.registerNativeImageToIdentifier(newImage, emissive);
+                    if (isRed){
+                        redEmissive = emissive;
+                    }else{
+                        brownEmissive = emissive;
+                    }
+                } else {
+                    ETFUtils2.registerNativeImageToIdentifier(newImage, idOfNew);
+                }
+                //System.out.println("id="+idOfNew);
+
+
+                //do a pass for the emissive texture if present return ignored
+                if (!doingEmissive) {
+                    prepareMushroomTextures(isRed, true);
+                    if (isRed) {
+                        ETFManager.redMooshroomAlt = new ETFTexture(idOfNew, redEmissive);
+                    } else {
+                        ETFManager.brownMooshroomAlt = new ETFTexture(idOfNew, brownEmissive);
+                    }
+                }
+                return isRed;
+            } catch (Exception e) {
+                ETFUtils2.logError("Mooshroom custom mushroom texture could not be loaded. " + e);
+            }
+        }
         return null;
     }
+
+
 
     //rewritten as original didn't seem to work, I must have accidentally changed the vanilla mushroom texture when testing originally
     @Inject(method = "renderMushroom", at = @At(value = "HEAD"), cancellable = true)
     private void etf$injected(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, boolean renderAsModel, BlockState mushroomState, int overlay, BakedModel mushroomModel, CallbackInfo ci) {
-//todo rewrite
-        //        Boolean shroomType = returnRedTrueBrownFalseVanillaNull(mushroomState);
-//        if (shroomType != null) {
-//            VertexConsumer texturedConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(shroomType ? RED_SHROOM_ALT : BROWN_SHROOM_ALT));
-//            for (ModelPart model :
-//                    shroomAsEntityModel) {
-//                model.render(matrices, texturedConsumer, light, overlay, 1, 1, 1, 1);
-//                ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, shroomType ? RED_SHROOM_ALT : BROWN_SHROOM_ALT, model, false);
-//
-//            }
-//            ci.cancel();
-//        }
+
+        Boolean shroomType = returnRedTrueBrownFalseVanillaNull(mushroomState);
+        if (shroomType != null) {
+            ETFTexture thisTexture = shroomType ? ETFManager.redMooshroomAlt : ETFManager.brownMooshroomAlt;
+            if (thisTexture!= null) {
+                for (ModelPart model :
+                        shroomAsEntityModel) {
+                    VertexConsumer texturedConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(thisTexture.thisIdentifier));
+                    model.render(matrices, texturedConsumer, light, overlay, 1, 1, 1, 1);
+
+                    thisTexture.renderEmissive(matrices, vertexConsumers,model);
+                    //ETFUtils2.generalEmissiveRenderPart(matrices, vertexConsumers, shroomType ? RED_SHROOM_ALT : BROWN_SHROOM_ALT, model, false);
+
+                }
+                ci.cancel();
+            }
+        }
         //else continue to vanilla code
     }
 }

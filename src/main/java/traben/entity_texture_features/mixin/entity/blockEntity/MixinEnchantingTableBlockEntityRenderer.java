@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import traben.entity_texture_features.texture_handlers.ETFManager;
-import traben.entity_texture_features.texture_handlers.ETFTexture;
 
 @Mixin(EnchantingTableBlockEntityRenderer.class)
 public abstract class MixinEnchantingTableBlockEntityRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity> {
@@ -35,7 +34,7 @@ public abstract class MixinEnchantingTableBlockEntityRenderer implements BlockEn
     private void etf$applyEmissiveBook(EnchantingTableBlockEntity enchantingTableBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, CallbackInfo ci) {
         //BOOK_TEXTURE.getTextureId().toString()
         String texture = "minecraft:textures/entity/enchanting_table_book.png";
-        VertexConsumer etf$vertex = ETFManager.getETFDefaultTexture(new Identifier(texture)).getEmissiveVertexConsumer(vertexConsumerProvider, ETFTexture.EmissiveRenderModes.blockEntityMode(), null);
+        VertexConsumer etf$vertex = ETFManager.getETFDefaultTexture(new Identifier(texture)).getEmissiveVertexConsumer(vertexConsumerProvider, null, ETFManager.EmissiveRenderModes.blockEntityMode());
         if (etf$vertex != null) {
             this.book.renderBook(matrixStack, etf$vertex, LightmapTextureManager.MAX_LIGHT_COORDINATE, j, 1, 1, 1, 1);
         }

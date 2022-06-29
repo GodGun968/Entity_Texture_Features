@@ -1,6 +1,8 @@
 package traben.entity_texture_features.mixin.entity.misc;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.model.ShieldEntityModel;
@@ -21,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import traben.entity_texture_features.texture_handlers.ETFManager;
 
 import static traben.entity_texture_features.ETFClient.ETFConfigData;
 
@@ -73,33 +76,45 @@ public abstract class MixinBuiltinModelItemRenderer implements SynchronousResour
             if (ETFConfigData.enableTridents && ETFConfigData.enableEmissiveTextures) {
                 String path = TridentEntityModel.TEXTURE.toString();
                 String name = stack.hasCustomName() ? "_" + stack.getName().getString().trim().replaceAll("\s", "_").toLowerCase().replaceAll("[^a-z\\d/_.-]", "") : "";
-                String fileString = path.replace(".png", name + ".png");
-                matrices.push();
-                matrices.scale(1.0F, -1.0F, -1.0F);
-                //todo rewrite ETFUtils.generalEmissiveRenderModel(matrices, vertexConsumers, fileString, this.modelTrident);
-                matrices.pop();
-
+                Identifier file = new Identifier( path.replace(".png", name + "_e.png"));
+                if(MinecraftClient.getInstance().getResourceManager().getResource(file).isPresent()) {
+                    matrices.push();
+                    matrices.scale(1.0F, -1.0F, -1.0F);
+                    VertexConsumer consumer = vertexConsumers.getBuffer(
+                            ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT ?
+                                    RenderLayer.getBeaconBeam(file, true) :
+                                    RenderLayer.getEntityTranslucent(file));
+                    this.modelTrident.render(matrices,consumer,LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+                    //ETFUtils.generalEmissiveRenderModel(matrices, vertexConsumers, fileString, this.modelTrident);
+                    matrices.pop();
+                }
             }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
         } else if (stack.isOf(Items.SHIELD)) {
-            if (ETFConfigData.specialEmissiveShield) {
-                if (ETFConfigData.enableEmissiveTextures) {
-                    boolean bl = BlockItem.getBlockEntityNbt(stack) != null;
-                    String fileString = bl ? "minecraft:textures/entity/shield_base.png" : "minecraft:textures/entity/shield_base_nopattern.png";
-                    matrices.push();
-                    matrices.scale(1.0F, -1.0F, -1.0F);
-                    //todo rewrite VertexConsumer consumer = ETFUtils.generalEmissiveGetVertexConsumer(fileString, vertexConsumers, false);
+            if (ETFConfigData.specialEmissiveShield && ETFConfigData.enableEmissiveTextures) {
 
-                    //todo rewrite ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getHandle(), false);
-                    //modelShield.getHandle().render(matrices,consumer,15728640,overlay,1,1,1,1);
-                    //modelShield.render(matrices,consumer,15728640,overlay,1,1,1,1);
-                    if (!bl)
-                        //todo rewrite     ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getPlate(), false);
-                        //if (!bl) modelShield.getPlate().render(matrices,consumer,15728640,overlay,1,1,1,1);
+                    boolean bl = BlockItem.getBlockEntityNbt(stack) != null;
+                    Identifier file = new Identifier( bl ? "textures/entity/shield_base_e.png" : "textures/entity/shield_base_nopattern_e.png");
+                    if(MinecraftClient.getInstance().getResourceManager().getResource(file).isPresent()) {
+                        matrices.push();
+                        matrices.scale(1.0F, -1.0F, -1.0F);
+                        VertexConsumer consumer = vertexConsumers.getBuffer(
+                                ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT ?
+                                        RenderLayer.getBeaconBeam(file, true) :
+                                        RenderLayer.getEntityTranslucent(file));
+
+                        //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getHandle(), false);
+                        modelShield.getHandle().render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+                        modelShield.render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+
+                        //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getPlate(), false);
+                        if (!bl)
+                            modelShield.getPlate().render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
                         //todo banner patterns implementation
                         matrices.pop();
-                }
+                    }
+
             }
 
         }

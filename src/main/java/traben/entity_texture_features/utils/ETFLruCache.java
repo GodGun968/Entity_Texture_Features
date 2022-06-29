@@ -1,7 +1,8 @@
-package traben.entity_texture_features.texture_handlers;
+package traben.entity_texture_features.utils;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import org.jetbrains.annotations.Nullable;
+import traben.entity_texture_features.texture_handlers.ETFManager;
 
 import static traben.entity_texture_features.ETFClient.ETFConfigData;
 
@@ -44,7 +45,7 @@ public class ETFLruCache<X, Y> {
         cache.putAndMoveToFirst(key, value);
     }
 
-    public void clear() {
+    public void clearCache() {
         cache.clear();
     }
 

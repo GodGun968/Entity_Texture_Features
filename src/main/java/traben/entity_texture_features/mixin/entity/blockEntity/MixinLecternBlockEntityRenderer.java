@@ -20,12 +20,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import traben.entity_texture_features.texture_handlers.ETFManager;
-import traben.entity_texture_features.texture_handlers.ETFTexture;
 
 import java.util.function.Function;
 
 import static traben.entity_texture_features.ETFClient.ETFConfigData;
-import static traben.entity_texture_features.ETFClient.lecternHasCustomTexture;
+import static traben.entity_texture_features.texture_handlers.ETFManager.lecternHasCustomTexture;
 
 @Mixin(LecternBlockEntityRenderer.class)
 public abstract class MixinLecternBlockEntityRenderer implements BlockEntityRenderer<LecternBlockEntity> {
@@ -48,7 +47,7 @@ public abstract class MixinLecternBlockEntityRenderer implements BlockEntityRend
 
         String texture = (ETFConfigData.enableCustomTextures && lecternHasCustomTexture) ? LECTERN_BOOK_PATH : "minecraft:texture_handlers/entity/enchanting_table_book.png";//EnchantingTableBlockEntityRenderer.BOOK_TEXTURE.getTextureId().toString();
 
-        VertexConsumer etf$vertex = ETFManager.getETFDefaultTexture(new Identifier(texture)).getEmissiveVertexConsumer(vertexConsumerProvider, ETFTexture.EmissiveRenderModes.blockEntityMode(), null);
+        VertexConsumer etf$vertex = ETFManager.getETFDefaultTexture(new Identifier(texture)).getEmissiveVertexConsumer(vertexConsumerProvider, null, ETFManager.EmissiveRenderModes.blockEntityMode());
         if (etf$vertex != null) {
             etf$redirectingEmissiveRender(matrixStack, etf$vertex, j);
         }

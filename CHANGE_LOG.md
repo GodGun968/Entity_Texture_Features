@@ -1,23 +1,16 @@
 **ETF Changelog:**
 
-[features not yet implemented in rewrite, but are planned, don't report these missing]
-- additional mob texture .properties support *(e.g. villager biome/profession textures, sheep_fur.png)*, these currently either copy the base texture variant number or use the default
-- trident features
-- elytra features
-- mooshroom custom mushrooms
-- armor texture features
-
-[ETF rewrite intended changes]
+[ETF rewrite changes]
 - additional mob textures like "sheep_fur.png" can now optionally utilize a "sheep_fur.properties" file to have settings different to the 'base' texture, if this properties file is not present ETF will try and use the same variant number as the 'base' texture the mob is using, failing all of these it will default to the regular vanilla texture for this variant
 - added config option "advanced_IncreaseCacheSizeModifier" which will only show in the config file, this should only be increased in the event of an extremely modded instance having over 2000 entities loaded on the client (the amount ETF now keeps track of at any given time), to prevent them being removed from ETF's memory.
 - cloth config is no longer included in the jar and is now an optional dependency *(it is required to use the mod menu settings screen)*
-- resourcepacks with property files that do not read correctly and cause problems will now fall back to the vanilla texture instead of randomly picking and causing confusion
-- creeper1.png will now be ignored and direct to the vanilla texture or a creeper.png in the optifine folder only
+- resource-packs with property files that do not read correctly and cause problems will now fall back to the vanilla texture instead of randomly picking and causing confusion
+- texture1.png will now be ignored and direct to the vanilla texture or a texture.png in an override folder only *(override folder being any of the etf or optifine folders)*
 
 [dev-build.1]
 - block entity features will not render if the texture is animated as it is not supported *(no need to change settings)*
 - further optimizations to additional mob textures *(like sheep_fur.png)*
-- added option to have different textures on left & right elytra wing using *"elytra_other.png"* *(compatible with CITResewn)*
+- added option to have a different texture on the left elytra wing using *"elytra_left.png"* *(compatible with CITResewn)*
 - fixed elytra emissive texture rendering
 
 [V3.1.4]

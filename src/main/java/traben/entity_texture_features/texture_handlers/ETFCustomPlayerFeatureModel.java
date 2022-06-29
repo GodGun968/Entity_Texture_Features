@@ -1,4 +1,4 @@
-package traben.entity_texture_features.utils;
+package traben.entity_texture_features.texture_handlers;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -7,13 +7,13 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
 import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
-public class ETFCustomPlayerFeatureModel<T extends LivingEntity> extends EntityModel<T> {
+public class ETFCustomPlayerFeatureModel<T extends PlayerEntity> extends EntityModel<T> {
     public final ModelPart nose;
     public final ModelPart jacket;
     public final ModelPart fatJacket;

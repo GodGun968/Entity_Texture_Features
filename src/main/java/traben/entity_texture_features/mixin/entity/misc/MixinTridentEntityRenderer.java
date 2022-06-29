@@ -15,11 +15,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import traben.entity_texture_features.texture_handlers.ETFManager;
+import traben.entity_texture_features.texture_handlers.ETFTexture;
+import traben.entity_texture_features.utils.ETFCacheKey;
+import traben.entity_texture_features.utils.ETFUtils2;
 
 import java.util.UUID;
 
 import static traben.entity_texture_features.ETFClient.ETFConfigData;
-import static traben.entity_texture_features.ETFClient.UUID_TRIDENT_NAME;
+import static traben.entity_texture_features.texture_handlers.ETFManager.UUID_TRIDENT_NAME;
+import static traben.entity_texture_features.texture_handlers.ETFManager.ENTITY_TEXTURE_MAP;
 
 @Mixin(TridentEntityRenderer.class)
 public abstract class MixinTridentEntityRenderer implements SynchronousResourceReloader {
@@ -29,31 +34,41 @@ public abstract class MixinTridentEntityRenderer implements SynchronousResourceR
 
     @Inject(method = "render(Lnet/minecraft/entity/projectile/TridentEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/TridentEntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", shift = At.Shift.AFTER))
     private void etf$changeEmissiveTexture(TridentEntity tridentEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
-        if (ETFConfigData.enableTridents && ETFConfigData.enableEmissiveTextures) {
-            UUID id = tridentEntity.getUuid();
-            String path = TridentEntityModel.TEXTURE.toString();
-            String name = UUID_TRIDENT_NAME.get(id) != null ? "_" + UUID_TRIDENT_NAME.get(id).toLowerCase().replaceAll("[^a-z\\d/_.-]", "") : "";
-            String fileString = UUID_TRIDENT_NAME.get(id) != null ? path.replace(".png", "_" + name + ".png") : path;
-            //todo rewrite ETFUtils.generalEmissiveRenderModel(matrixStack, vertexConsumerProvider, fileString, this.model);
+        if (ETFConfigData.enableTridents) {
+
+            if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, this.model, ETFManager.EmissiveRenderModes.BRIGHT);
 
 
         }
     }
 
+    private ETFTexture thisETFTexture = null;
     @Redirect(method = "render(Lnet/minecraft/entity/projectile/TridentEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/TridentEntityRenderer;getTexture(Lnet/minecraft/entity/projectile/TridentEntity;)Lnet/minecraft/util/Identifier;"))
     private Identifier etf$returnTexture(TridentEntityRenderer instance, TridentEntity tridentEntity) {
-        if (ETFConfigData.enableTridents && ETFConfigData.enableCustomTextures) {
+        if (ETFConfigData.enableTridents ) {
             UUID id = tridentEntity.getUuid();
-            if (UUID_TRIDENT_NAME.get(id) != null) {
-                String path = TridentEntityModel.TEXTURE.toString();
-                String name = UUID_TRIDENT_NAME.get(id).toLowerCase().replaceAll("[^a-z\\d/_.-]", "");
-                Identifier possibleId = new Identifier(path.replace(".png", "_" + name + ".png"));
-                if (MinecraftClient.getInstance().getResourceManager().getResource(possibleId).isPresent()) {
-                    return possibleId;
+            ETFCacheKey key = new ETFCacheKey(id,null);
+            if (ENTITY_TEXTURE_MAP.containsKey(key)){
+                thisETFTexture = ENTITY_TEXTURE_MAP.get(key);
+                if(thisETFTexture != null) {
+                    return thisETFTexture.thisIdentifier;
+                }
+            }else {
+                if (UUID_TRIDENT_NAME.get(id) != null) {
+                    String path = TridentEntityModel.TEXTURE.toString();
+                    String name = UUID_TRIDENT_NAME.get(id).toLowerCase().replaceAll("[^a-z\\d/_.-]", "");
+                    Identifier possibleId = new Identifier(path.replace(".png", "_" + name + ".png"));
+                    if (MinecraftClient.getInstance().getResourceManager().getResource(possibleId).isPresent()) {
+                        Identifier emissive = ETFUtils2.replaceIdentifier(possibleId,".png","_e.png");
+                        if(MinecraftClient.getInstance().getResourceManager().getResource(emissive).isEmpty()){
+                            emissive = null;
+                        }
+                        ENTITY_TEXTURE_MAP.put(key,new ETFTexture(possibleId,emissive));
+                        return possibleId;
+                    }
                 }
             }
-
         }
         return instance.getTexture(tridentEntity);
     }

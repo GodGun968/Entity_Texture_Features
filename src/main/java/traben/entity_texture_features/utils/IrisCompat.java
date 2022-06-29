@@ -4,7 +4,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.irisshaders.iris.api.v0.IrisApi;
 
 // iris compat improved by @Maximum#8760
-public class IrisCompat {
+public abstract class IrisCompat {
     public static final boolean IRIS_DETECTED = FabricLoader.getInstance().isModLoaded("iris");
 
     private static final InternalHandler INTERNAL_HANDLER = IRIS_DETECTED ? new InternalHandlerImpl() : new InternalHandler() {

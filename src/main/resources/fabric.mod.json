@@ -3,7 +3,7 @@
   "id": "entity_texture_features",
   "version": "${version}",
   "name": "Entity Texture Features",
-  "description": "!Cloth config is required to change settings with ModMenu! \nOptifine format compatible:\n - Random & Custom textures\n - Emissive textures\n\nWith more features such as:\n - Blinking textures\n - Player Skin support",
+  "description": "Adds support for resource-pack driven features for entity textures including some OptiFine features\n§c!Cloth config is required to change settings with ModMenu!§7 \nSupports OptiFine:\n - Random & Custom textures\n - Emissive textures\nWith more features such as:\n - Blinking textures\n - Player Skin support",
   "authors": [
     {
       "name": "Traben",

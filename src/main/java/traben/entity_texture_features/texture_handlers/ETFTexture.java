@@ -3,7 +3,6 @@ package traben.entity_texture_features.texture_handlers;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -42,7 +41,7 @@ public class ETFTexture {
 
     private final static String PATCH_NAMESPACE_PREFIX = "etf_patched_";
     //this variants id , might be vanilla
-    private final Identifier thisIdentifier;
+    public final Identifier thisIdentifier;
     private final Object2ReferenceOpenHashMap<Identifier, Identifier> FEATURE_TEXTURE_MAP = new Object2ReferenceOpenHashMap<>();
     public TextureReturnState currentTextureState = TextureReturnState.NORMAL;
     //a variation of thisIdentifier but with emissive texture pixels removed for z-fighting solution
@@ -60,9 +59,9 @@ public class ETFTexture {
 
     private final int variantNumber;
 
-   // private final TextureSource source;
+    // private final TextureSource source;
 
-    public ETFTexture(/*@NotNull Identifier vanillaIdentifier,*/ @NotNull Identifier variantIdentifier){//,TextureSource source) {
+    public ETFTexture(/*@NotNull Identifier vanillaIdentifier,*/ @NotNull Identifier variantIdentifier) {//,TextureSource source) {
         //this.vanillaIdentifier = vanillaIdentifier;
         //this.source = source;
         this.thisIdentifier = variantIdentifier;
@@ -70,7 +69,7 @@ public class ETFTexture {
         Matcher matcher = pattern.matcher(variantIdentifier.getPath());
         if (matcher.find()) {
             this.variantNumber = Integer.parseInt(matcher.group());
-        }else{
+        } else {
             this.variantNumber = 0;
         }
         setupBlinking();
@@ -78,13 +77,39 @@ public class ETFTexture {
 
     }
 
-    private static EmissiveRenderModes getEmissiveMode() {
-        if (ETFConfigData.fullBrightEmissives) {
-            return EmissiveRenderModes.BRIGHT;
-        } else {
-            return EmissiveRenderModes.DULL;
-        }
+    //alternative initiator for already known textures used for players
+    public ETFTexture(@NotNull Identifier modifiedSkinIdentifier,
+                      @Nullable Identifier blinkIdentifier,
+                      @Nullable Identifier blink2Identifier,
+                      @Nullable Identifier emissiveIdentifier,
+                      @Nullable Identifier blinkEmissiveIdentifier,
+                      @Nullable Identifier blink2EmissiveIdentifier) {
+
+        //ALL input already tested and confirmed existing
+        this.variantNumber = 0;
+        this.thisIdentifier = modifiedSkinIdentifier;
+        this.blinkIdentifier = blinkIdentifier;
+        this.blink2Identifier = blink2Identifier;
+        this.emissiveIdentifier = emissiveIdentifier;
+        this.emissiveBlinkIdentifier = blinkEmissiveIdentifier;
+        this.emissiveBlink2Identifier = blink2EmissiveIdentifier;
+        //setupBlinking(); neither required
+        //setupEmissives();
+        createPatchedTextures();
     }
+    //alternative initiator for already known textures used for mooshrooms mushrooms
+    public ETFTexture(@NotNull Identifier modifiedSkinIdentifier,
+                      @Nullable Identifier emissiveIdentifier) {
+
+        //ALL input already tested and confirmed existing
+        this.variantNumber = 0;
+        this.thisIdentifier = modifiedSkinIdentifier;
+        this.emissiveIdentifier = emissiveIdentifier;
+        //setupBlinking(); neither required
+        //setupEmissives();
+        createPatchedTextures();
+    }
+
 
     private void setupBlinking() {
         if (ETFConfigData.enableBlinking) {
@@ -170,41 +195,45 @@ public class ETFTexture {
                     break;
                 }
             }
-            if (this.emissiveIdentifier != null) {
-                //create patched texture
-                NativeImage emissiveImage = ETFUtils2.getNativeImageElseNull(emissiveIdentifier);
+            createPatchedTextures();
+        }
+    }
 
-                try {
-                    NativeImage originalCopyToPatch = returnPatchedVersionOrNull(ETFUtils2.getNativeImageElseNull(thisIdentifier), emissiveImage);
-                    //no errors here means it all , and we have a patched texture in originalCopyToPatch
-                    thisIdentifier_Patched = new Identifier(PATCH_NAMESPACE_PREFIX + thisIdentifier.getNamespace(), thisIdentifier.getPath());
-                    ETFUtils2.registerNativeImageToIdentifier(originalCopyToPatch, thisIdentifier_Patched);
+    private void createPatchedTextures() {
+        if (this.emissiveIdentifier != null) {
+            //create patched texture
+            NativeImage emissiveImage = ETFUtils2.getNativeImageElseNull(emissiveIdentifier);
 
-                    if (doesBlink() && emissiveBlinkIdentifier != null) {
-                        NativeImage blinkCopyToPatch = returnPatchedVersionOrNull(ETFUtils2.getNativeImageElseNull(blinkIdentifier), emissiveImage);
+            try {
+                NativeImage originalCopyToPatch = returnPatchedVersionOrNull(ETFUtils2.getNativeImageElseNull(thisIdentifier), emissiveImage);
+                //no errors here means it all , and we have a patched texture in originalCopyToPatch
+                thisIdentifier_Patched = new Identifier(PATCH_NAMESPACE_PREFIX + thisIdentifier.getNamespace(), thisIdentifier.getPath());
+                ETFUtils2.registerNativeImageToIdentifier(originalCopyToPatch, thisIdentifier_Patched);
+
+                if (doesBlink() && emissiveBlinkIdentifier != null) {
+                    NativeImage emissiveBlinkImage = ETFUtils2.getNativeImageElseNull(emissiveBlinkIdentifier);
+                    NativeImage blinkCopyToPatch = returnPatchedVersionOrNull(ETFUtils2.getNativeImageElseNull(blinkIdentifier), emissiveBlinkImage);
+                    //no errors here means it all worked, and we have a patched texture in
+                    blinkIdentifier_Patched = new Identifier(PATCH_NAMESPACE_PREFIX + blinkIdentifier.getNamespace(), blinkIdentifier.getPath());
+                    ETFUtils2.registerNativeImageToIdentifier(blinkCopyToPatch, blinkIdentifier_Patched);
+
+                    if (doesBlink2() && emissiveBlink2Identifier != null) {
+                        NativeImage emissiveBlink2Image = ETFUtils2.getNativeImageElseNull(emissiveBlink2Identifier);
+                        NativeImage blink2CopyToPatch = returnPatchedVersionOrNull(ETFUtils2.getNativeImageElseNull(blink2Identifier), emissiveBlink2Image);
                         //no errors here means it all worked, and we have a patched texture in
-                        blinkIdentifier_Patched = new Identifier(PATCH_NAMESPACE_PREFIX + blinkIdentifier.getNamespace(), blinkIdentifier.getPath());
-                        ETFUtils2.registerNativeImageToIdentifier(blinkCopyToPatch, blinkIdentifier_Patched);
-
-                        if (doesBlink2() && emissiveBlink2Identifier != null) {
-                            NativeImage blink2CopyToPatch = returnPatchedVersionOrNull(ETFUtils2.getNativeImageElseNull(blink2Identifier), emissiveImage);
-                            //no errors here means it all worked, and we have a patched texture in
-                            blink2Identifier_Patched = new Identifier(PATCH_NAMESPACE_PREFIX + blink2Identifier.getNamespace(), blink2Identifier.getPath());
-                            ETFUtils2.registerNativeImageToIdentifier(blink2CopyToPatch, blinkIdentifier_Patched);
-                        }
+                        blink2Identifier_Patched = new Identifier(PATCH_NAMESPACE_PREFIX + blink2Identifier.getNamespace(), blink2Identifier.getPath());
+                        ETFUtils2.registerNativeImageToIdentifier(blink2CopyToPatch, blinkIdentifier_Patched);
                     }
-                } catch (Exception ignored) {
-                    //assert this just in case of crash in unexpected step after being set
-                    thisIdentifier_Patched = null;
-                    blinkIdentifier_Patched = null;
-                    blink2Identifier_Patched = null;
                 }
-
+            } catch (Exception ignored) {
+                //assert this just in case of crash in unexpected step after being set
+                thisIdentifier_Patched = null;
+                blinkIdentifier_Patched = null;
+                blink2Identifier_Patched = null;
             }
 
-            //emissive texture has been set and patches created if needed
         }
-        //do not create emissive - END
+
     }
 
     private @NotNull NativeImage returnPatchedVersionOrNull(NativeImage baseImage, NativeImage emissiveImage) throws IndexOutOfBoundsException {
@@ -237,7 +266,7 @@ public class ETFTexture {
         }
         //otherwise we need to find what it is and add to map
         ETFDirectory directory = ETFDirectory.getDirectoryOf(thisIdentifier);
-        if (variantNumber != 0){
+        if (variantNumber != 0) {
             Identifier possibleFeatureVariantIdentifier =
                     ETFDirectory.getIdentiferAsDirectory(
                             ETFUtils2.replaceIdentifier(
@@ -257,16 +286,15 @@ public class ETFTexture {
         ETFDirectory tryDirectory = ETFDirectory.getDirectoryOf(vanillaFeatureTexture);
         if (tryDirectory == directory || tryDirectory == ETFDirectory.VANILLA) {
             //if same directory as main texture or is vanilla texture use it
-            Identifier tryDirectoryVariant = ETFDirectory.getIdentiferAsDirectory(vanillaFeatureTexture,tryDirectory);
+            Identifier tryDirectoryVariant = ETFDirectory.getIdentiferAsDirectory(vanillaFeatureTexture, tryDirectory);
             FEATURE_TEXTURE_MAP.put(vanillaFeatureTexture, tryDirectoryVariant);
             return tryDirectoryVariant;
         }
         //final fallback just use vanilla
         FEATURE_TEXTURE_MAP.put(vanillaFeatureTexture, vanillaFeatureTexture);
-        return  vanillaFeatureTexture;
+        return vanillaFeatureTexture;
 
     }
-
 
 
     public Identifier getTextureIdentifierTryPatchedOnly(@Nullable LivingEntity entity) {
@@ -280,7 +308,7 @@ public class ETFTexture {
     }
 
     @NotNull
-    private Identifier getTextureIdentifier(@Nullable LivingEntity entity, boolean forcePatchedTexture) {
+    public Identifier getTextureIdentifier(@Nullable LivingEntity entity, boolean forcePatchedTexture) {
 
         if (isPatched() && (forcePatchedTexture || (ETFConfigData.enableEmissiveTextures && IrisCompat.isShaderPackInUse()))) {
             //patched required
@@ -309,29 +337,31 @@ public class ETFTexture {
             return identifierOfCurrentState();
         } else {
             //do regular blinking
-            UUID id = entity.getUuid();
-            if (!ENTITY_BLINK_TIME.containsKey(id)) {
-                ENTITY_BLINK_TIME.put(id, entity.world.getTime() + blinkLength + 1);
-                return identifierOfCurrentState();
-            }
-            long nextBlink = ENTITY_BLINK_TIME.getLong(id);
-            long currentTime = entity.world.getTime();
+            if (entity.world != null) {
+                UUID id = entity.getUuid();
+                if (!ENTITY_BLINK_TIME.containsKey(id)) {
+                    ENTITY_BLINK_TIME.put(id, entity.world.getTime() + blinkLength + 1);
+                    return identifierOfCurrentState();
+                }
+                long nextBlink = ENTITY_BLINK_TIME.getLong(id);
+                long currentTime = entity.world.getTime();
 
-            if (currentTime >= nextBlink - blinkLength && currentTime <= nextBlink + blinkLength) {
-                if (doesBlink2()) {
-                    if (currentTime >= nextBlink - (blinkLength / 3) && currentTime <= nextBlink + (blinkLength / 3)) {
+                if (currentTime >= nextBlink - blinkLength && currentTime <= nextBlink + blinkLength) {
+                    if (doesBlink2()) {
+                        if (currentTime >= nextBlink - (blinkLength / 3) && currentTime <= nextBlink + (blinkLength / 3)) {
+                            modifyTextureState(TextureReturnState.APPLY_BLINK);
+                            return identifierOfCurrentState();
+                        }
+                        modifyTextureState(TextureReturnState.APPLY_BLINK2);
+                        return identifierOfCurrentState();
+                    } else if (!(currentTime > nextBlink)) {
                         modifyTextureState(TextureReturnState.APPLY_BLINK);
                         return identifierOfCurrentState();
                     }
-                    modifyTextureState(TextureReturnState.APPLY_BLINK2);
-                    return identifierOfCurrentState();
-                } else if (!(currentTime > nextBlink)) {
-                    modifyTextureState(TextureReturnState.APPLY_BLINK);
-                    return identifierOfCurrentState();
+                } else if (currentTime > nextBlink + blinkLength) {
+                    //calculate new next blink
+                    ENTITY_BLINK_TIME.put(id, currentTime + entity.getRandom().nextInt(blinkFrequency) + 20);
                 }
-            } else if (currentTime > nextBlink + blinkLength) {
-                //calculate new next blink
-                ENTITY_BLINK_TIME.put(id, currentTime + entity.getRandom().nextInt(blinkFrequency) + 20);
             }
         }
         return identifierOfCurrentState();
@@ -360,29 +390,34 @@ public class ETFTexture {
     }
 
     public void renderEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, ModelPart modelPart) {
-        renderEmissive(matrixStack, vertexConsumerProvider, modelPart, getEmissiveMode());
+        renderEmissive(matrixStack, vertexConsumerProvider, modelPart, ETFManager.getEmissiveMode());
     }
 
-    public void renderEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, ModelPart modelPart, EmissiveRenderModes modeToUsePossiblyManuallyChosen) {
-        VertexConsumer vertexC = getEmissiveVertexConsumer(vertexConsumerProvider, modeToUsePossiblyManuallyChosen, null);
+    public void renderEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, ModelPart modelPart, ETFManager.EmissiveRenderModes modeToUsePossiblyManuallyChosen) {
+        VertexConsumer vertexC = getEmissiveVertexConsumer(vertexConsumerProvider, null, modeToUsePossiblyManuallyChosen);
         if (vertexC != null) {
             modelPart.render(matrixStack, vertexC, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV);
         }
     }
 
     public void renderEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, Model model) {
-        renderEmissive(matrixStack, vertexConsumerProvider, model, getEmissiveMode());
+        renderEmissive(matrixStack, vertexConsumerProvider, model, ETFManager.getEmissiveMode());
     }
 
-    public void renderEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, Model model, EmissiveRenderModes modeToUsePossiblyManuallyChosen) {
-        VertexConsumer vertexC = getEmissiveVertexConsumer(vertexConsumerProvider, modeToUsePossiblyManuallyChosen, model);
+    public void renderEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, Model model, ETFManager.EmissiveRenderModes modeToUsePossiblyManuallyChosen) {
+        VertexConsumer vertexC = getEmissiveVertexConsumer(vertexConsumerProvider, model, modeToUsePossiblyManuallyChosen);
         if (vertexC != null) {
             model.render(matrixStack, vertexC, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
         }
     }
 
     @Nullable
-    public VertexConsumer getEmissiveVertexConsumer(VertexConsumerProvider vertexConsumerProvider, EmissiveRenderModes modeToUsePossiblyManuallyChosen, @Nullable Model model) {
+    public VertexConsumer getEmissiveVertexConsumer(VertexConsumerProvider vertexConsumerProvider, @Nullable Model model) {
+        return getEmissiveVertexConsumer(vertexConsumerProvider, model, ETFManager.getEmissiveMode());
+    }
+
+    @Nullable
+    public VertexConsumer getEmissiveVertexConsumer(VertexConsumerProvider vertexConsumerProvider, @Nullable Model model, ETFManager.EmissiveRenderModes modeToUsePossiblyManuallyChosen) {
         if (isEmissive()) {
             // block entity variants
             //removed in rework may return
@@ -391,9 +426,9 @@ public class ETFTexture {
 //                } else {
 //                    return vertexConsumerProvider.getBuffer(RenderLayer.getItemEntityTranslucentCull(PATH_EMISSIVE_TEXTURE_IDENTIFIER.get(fileString)));
 //                }
-            Identifier emissiveToUse = emissiveIdentifierOfCurrentState();
+            Identifier emissiveToUse = getEmissiveIdentifierOfCurrentState();
             if (emissiveToUse != null) {
-                if (modeToUsePossiblyManuallyChosen == EmissiveRenderModes.BRIGHT) {
+                if (modeToUsePossiblyManuallyChosen == ETFManager.EmissiveRenderModes.BRIGHT) {
                     return vertexConsumerProvider.getBuffer(RenderLayer.getBeaconBeam(emissiveToUse, !IrisCompat.isShaderPackInUse()));
                 } else {
                     if (model == null) {
@@ -442,7 +477,7 @@ public class ETFTexture {
     }
 
     @Nullable
-    private Identifier emissiveIdentifierOfCurrentState() {
+    public Identifier getEmissiveIdentifierOfCurrentState() {
         return switch (currentTextureState) {
             case NORMAL, NORMAL_PATCHED -> emissiveIdentifier;
             case BLINK, BLINK_PATCHED -> emissiveBlinkIdentifier;
@@ -451,21 +486,6 @@ public class ETFTexture {
                 //ETFUtils.logError("identifierOfCurrentState failed, it should not have, returning default");
                     thisIdentifier;
         };
-    }
-
-    public enum EmissiveRenderModes {
-        DULL,
-        BRIGHT;
-
-        public static EmissiveRenderModes blockEntityMode() {
-            //iris has fixes for bright mode which is otherwise broken on block entities, does not require enabled shaders
-            if (FabricLoader.getInstance().isModLoaded("iris") && ETFConfigData.fullBrightEmissives) {
-                return BRIGHT;
-            } else {
-                //todo investigate if block entities require a third enum for custom render mode
-                return DULL;
-            }
-        }
     }
 
     public enum TextureReturnState {

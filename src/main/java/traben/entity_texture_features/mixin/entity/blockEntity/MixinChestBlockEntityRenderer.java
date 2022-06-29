@@ -91,9 +91,9 @@ public abstract class MixinChestBlockEntityRenderer<T extends BlockEntity & LidO
             at = @At(value = "TAIL"))
     private void etf$renderEmissiveChest(MatrixStack matrices, VertexConsumer vertices, ModelPart lid, ModelPart latch, ModelPart base, float openFactor, int light, int overlay, CallbackInfo ci) {
         if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
-            thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, lid, ETFTexture.EmissiveRenderModes.blockEntityMode());
-            thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, latch, ETFTexture.EmissiveRenderModes.blockEntityMode());
-            thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, base, ETFTexture.EmissiveRenderModes.blockEntityMode());
+            thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, lid, ETFManager.EmissiveRenderModes.blockEntityMode());
+            thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, latch, ETFManager.EmissiveRenderModes.blockEntityMode());
+            thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, base, ETFManager.EmissiveRenderModes.blockEntityMode());
 
             etf$textureOfThis = null;
             etf$vertexConsumerProviderOfThis = null;
