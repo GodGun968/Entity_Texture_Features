@@ -81,13 +81,10 @@ public abstract class MixinShulkerBoxBlockEntityRenderer implements BlockEntityR
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/ShulkerEntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V"),
             index = 1)
     private VertexConsumer etf$alterTexture(VertexConsumer vertices) {
-        //System.out.println("doCustom ="+(!ETFConfigData.enableCustomTextures) + ","+(etf$textureOfThis == null) +","+ (etf$shulkerBoxStandInDummy == null));
 
         if (isAnimatedTexture || !ETFConfigData.enableCustomTextures || !ETFConfigData.enableCustomBlockEntities || etf$textureOfThis == null || etf$shulkerBoxStandInDummy == null)
             return vertices;
-        //System.out.println("pre="+etf$textureOfThis);
-        //etf$textureOfThis = ETFUtils.generalProcessAndReturnAlteredTexture(etf$textureOfThis, etf$shulkerBoxStandInDummy);
-        //System.out.println("alterred="+etf$textureOfThis);
+
         thisETFTexture = ETFManager.getETFTexture(etf$textureOfThis, etf$shulkerBoxStandInDummy, ETFManager.TextureSource.BLOCK_ENTITY);
         VertexConsumer alteredReturn = etf$vertexConsumerProviderOfThis.getBuffer(RenderLayer.getEntityCutoutNoCull(thisETFTexture.getTextureIdentifier(etf$shulkerBoxStandInDummy)));
         return alteredReturn == null ? vertices : alteredReturn;
@@ -98,12 +95,9 @@ public abstract class MixinShulkerBoxBlockEntityRenderer implements BlockEntityR
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/ShulkerEntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V",
                     shift = At.Shift.AFTER))
     private void etf$emissiveTime(ShulkerBoxBlockEntity shulkerBoxBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, CallbackInfo ci) {
-        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
+        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null)) {
             thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, this.model);
         }
-        //etf$shulkerBoxStandInDummy = null;
-        //etf$vertexConsumerProviderOfThis = null;
-        //etf$textureOfThis = null;
     }
 
 

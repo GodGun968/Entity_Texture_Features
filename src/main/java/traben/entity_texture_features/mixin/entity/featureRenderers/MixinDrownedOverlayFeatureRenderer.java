@@ -23,9 +23,6 @@ import traben.entity_texture_features.texture_handlers.ETFTexture;
 public abstract class MixinDrownedOverlayFeatureRenderer<T extends DrownedEntity> extends FeatureRenderer<T, DrownedEntityModel<T>> {
 
 
-    @Final
-    @Shadow
-    private static Identifier SKIN;
     private ETFTexture thisETFTexture = null;
     private DrownedEntity etf$entity = null;
     @Final

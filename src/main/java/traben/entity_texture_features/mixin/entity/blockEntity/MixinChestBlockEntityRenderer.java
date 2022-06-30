@@ -90,7 +90,7 @@ public abstract class MixinChestBlockEntityRenderer<T extends BlockEntity & LidO
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/model/ModelPart;Lnet/minecraft/client/model/ModelPart;Lnet/minecraft/client/model/ModelPart;FII)V",
             at = @At(value = "TAIL"))
     private void etf$renderEmissiveChest(MatrixStack matrices, VertexConsumer vertices, ModelPart lid, ModelPart latch, ModelPart base, float openFactor, int light, int overlay, CallbackInfo ci) {
-        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
+        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null)) {
             thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, lid, ETFManager.EmissiveRenderModes.blockEntityMode());
             thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, latch, ETFManager.EmissiveRenderModes.blockEntityMode());
             thisETFTexture.renderEmissive(matrices, etf$vertexConsumerProviderOfThis, base, ETFManager.EmissiveRenderModes.blockEntityMode());

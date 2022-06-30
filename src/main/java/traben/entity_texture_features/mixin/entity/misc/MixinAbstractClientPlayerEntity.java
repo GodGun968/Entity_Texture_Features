@@ -27,8 +27,7 @@ public abstract class MixinAbstractClientPlayerEntity extends PlayerEntity {
     @Inject(method = "getCapeTexture",
             at = @At("RETURN"), cancellable = true)
     private void changeCapeReturnsToNotNull(CallbackInfoReturnable<Identifier> cir) {
-        //requires a non-null return for elytras and for enabling cape rendering
-        //cape rendering is itself overridden by etf
+        //requires a non-null return for elytras and for enabling cape rendering which is itself overridden by etf
 
         Identifier cape = cir.getReturnValue();
         if (cape != null) {
@@ -38,11 +37,15 @@ public abstract class MixinAbstractClientPlayerEntity extends PlayerEntity {
             }
         }
         ETFPlayerTexture textureData = ETFManager.getPlayerTexture(this);
-        if (textureData != null && textureData.hasCustomCape()){
+        if (textureData != null && textureData.hasCustomCape()) {
             cir.setReturnValue(textureData.etfCapeIdentifier);
         }
-        if(getUuid().equals(ETFPlayerTexture.Dev)){cir.setReturnValue(new Identifier("etf","textures/capes/dev.png"));}
-        if(getUuid().equals(ETFPlayerTexture.Wife)){cir.setReturnValue(new Identifier("etf","textures/capes/wife.png"));}
+        if (getUuid().equals(ETFPlayerTexture.Dev)) {
+            cir.setReturnValue(new Identifier("etf", "textures/capes/dev.png"));
+        }
+        if (getUuid().equals(ETFPlayerTexture.Wife)) {
+            cir.setReturnValue(new Identifier("etf", "textures/capes/wife.png"));
+        }
     }
 
     @Inject(method = "canRenderCapeTexture",
@@ -51,9 +54,9 @@ public abstract class MixinAbstractClientPlayerEntity extends PlayerEntity {
     private void changeCapeReturnsBoolean(CallbackInfoReturnable<Boolean> cir) {
         ETFPlayerTexture textureData = ETFManager.getPlayerTexture(this);
         if ((textureData != null && textureData.hasCustomCape())
-            || getUuid().equals(ETFPlayerTexture.Dev)
-            || getUuid().equals(ETFPlayerTexture.Wife)){
-                cir.setReturnValue(true);
+                || getUuid().equals(ETFPlayerTexture.Dev)
+                || getUuid().equals(ETFPlayerTexture.Wife)) {
+            cir.setReturnValue(true);
         }
     }
 }

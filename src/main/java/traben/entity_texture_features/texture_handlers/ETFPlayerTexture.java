@@ -42,677 +42,42 @@ import static traben.entity_texture_features.texture_handlers.ETFManager.PLAYER_
 public class ETFPlayerTexture {
 
     public static final String SKIN_NAMESPACE = "etf_skin";
-    private ETFCustomPlayerFeatureModel<PlayerEntity> customPlayerModel;
-
-    private boolean isTextureReady = false;
-
-    private boolean hasFeatures = false;
-
-    private boolean hasVanillaCape = false;
-
-
+    public static final UUID Dev = UUID.fromString("fd22e573-178c-415a-94fe-e476b328abfd");
+    //public static final UUID Dev2 = UUID.fromString("bc2d6979-ddde-4452-8c7d-caefa4aceb01");
+    public static final UUID Wife = UUID.fromString("cab7d2e2-519f-4b34-afbd-b65f4542b8a1");
+    public Identifier baseEnchantIdentifier = null;
+    public Identifier baseEnchantBlinkIdentifier = null;
+    public Identifier baseEnchantBlink2Identifier = null;
+    public Identifier etfCapeIdentifier = null;
     boolean hasEmissives = false;
     boolean hasEnchant = false;
     boolean hasVillagerNose = false;
-
+    PlayerEntity player;
+    private ETFCustomPlayerFeatureModel<PlayerEntity> customPlayerModel;
+    private boolean isTextureReady = false;
+    private boolean hasFeatures = false;
+    private boolean hasVanillaCape = false;
     private NativeImage originalSkin;
     private NativeImage originalCape;
-    boolean thirdPartyCapeWaiting = false;
-
-    private boolean allowThisETFBaseSkin =true;
-
-    private Identifier coatIdentifier=null;
-    private Identifier coatEmissiveIdentifier=null;
-    private Identifier coatEnchantedIdentifier=null;
-
+    private boolean allowThisETFBaseSkin = true;
+    private Identifier coatIdentifier = null;
+    private Identifier coatEmissiveIdentifier = null;
+    private Identifier coatEnchantedIdentifier = null;
     private int[] enchantCapeBounds = null;
     private int[] emissiveCapeBounds = null;
-
-    public Identifier baseEnchantIdentifier =null;
-    public Identifier baseEnchantBlinkIdentifier =null;
-    public Identifier baseEnchantBlink2Identifier =null;
-
-    private Identifier modifiedSkinIdentifier=null;
-
-    public Identifier etfCapeIdentifier=null;
-    private Identifier etfCapeEmissiveIdentifier =null;
-    private Identifier etfCapeEnchantedIdentifier =null;
+    private Identifier etfCapeEmissiveIdentifier = null;
+    private Identifier etfCapeEnchantedIdentifier = null;
     private boolean hasFatCoat = false;
-
     //provides emissive patching and blinking functionality
     //all ETFPlayerTexture needs to do is build those textures and register them before this ETFTexture is made, and it will auto locate and apply them
     private ETFTexture etfTextureOfFinalBaseSkin;
 
-    PlayerEntity player;
 
-    public static final UUID Dev = UUID.fromString("fd22e573-178c-415a-94fe-e476b328abfd");
-    //public static final UUID Dev2 = UUID.fromString("bc2d6979-ddde-4452-8c7d-caefa4aceb01");
-    public static final UUID Wife = UUID.fromString("cab7d2e2-519f-4b34-afbd-b65f4542b8a1");
-
-
-
-    ETFPlayerTexture(PlayerEntity player){
+    ETFPlayerTexture(PlayerEntity player) {
         //initiate texture download as we need unprocessed texture from the skin server
         this.player = player;
         triggerSkinDownload();
     }
-
-    public boolean hasCustomCape(){
-        return etfCapeIdentifier!=null;
-    }
-
-    @Nullable
-    public Identifier getBaseTextureIdentifierOrNullForVanilla(PlayerEntity player){
-        this.player = player;//refresh player data
-        if(allowThisETFBaseSkin && canUseFeaturesForThisPlayer() && etfTextureOfFinalBaseSkin != null){
-            return etfTextureOfFinalBaseSkin.getTextureIdentifier(player);
-        }
-        return null;
-    }
-    @Nullable
-    public Identifier getBaseTextureEmissiveIdentifierOrNullForNone(){
-        if(hasEmissives && canUseFeaturesForThisPlayer() && etfTextureOfFinalBaseSkin != null){
-            return etfTextureOfFinalBaseSkin.getEmissiveIdentifierOfCurrentState();
-        }
-        return null;
-    }
-
-//    @Nullable
-//    public Identifier getCapeTextureIdentifierOrNullForVanilla(){
-//        if (canUseFeaturesForThisPlayer()){
-//            //this may be null, etf, or third party
-//            return etfCapeIdentifier;
-//        }else{
-//            return null;
-//        }
-//    }
-
-    public void renderCapeAndFeatures(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light,PlayerEntityModel<AbstractClientPlayerEntity> model){
-        if (canUseFeaturesForThisPlayer()){
-            if (etfCapeIdentifier != null) {
-                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(etfCapeIdentifier));
-                model.renderCape(matrixStack, vertexConsumer, light, OverlayTexture.DEFAULT_UV);
-
-                    if (etfCapeEmissiveIdentifier != null) {
-                        VertexConsumer emissiveVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(etfCapeEmissiveIdentifier));
-                        model.renderCape(matrixStack, emissiveVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV);
-                    }
-                    if (etfCapeEnchantedIdentifier != null) {
-                        VertexConsumer enchantVert = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(etfCapeEnchantedIdentifier), false, true);
-                        model.renderCape(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV);
-                    }
-
-            }
-        }
-    }
-
-    public boolean canUseFeaturesForThisPlayer(){
-        return isTextureReady
-                && hasFeatures
-                && (//not on enemy team or doesn't matter
-                    ETFConfigData.enableEnemyTeamPlayersSkinFeatures
-                    || (player.isTeammate(MinecraftClient.getInstance().player)
-                    || player.getScoreboardTeam() == null));
-    }
-
-    public void renderFeatures(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, PlayerEntityModel<PlayerEntity> model){
-        if ( canUseFeaturesForThisPlayer()){
-            //villager nose
-            if (hasVillagerNose) {
-                customPlayerModel.nose.copyTransform(model.head);
-                Identifier villager = new Identifier("textures/entity/villager/villager.png");
-                VertexConsumer villagerVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntitySolid(villager));
-                customPlayerModel.nose.render(matrixStack, villagerVert, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
-            }
-
-            //coat features
-            ItemStack armour = player.getInventory().getArmorStack(1);
-            if (coatIdentifier != null &&
-                    player.isPartVisible(PlayerModelPart.JACKET) &&
-                    !(armour.isOf(Items.CHAINMAIL_LEGGINGS) ||
-                            armour.isOf(Items.LEATHER_LEGGINGS) ||
-                            armour.isOf(Items.DIAMOND_LEGGINGS) ||
-                            armour.isOf(Items.GOLDEN_LEGGINGS) ||
-                            armour.isOf(Items.IRON_LEGGINGS) ||
-                            armour.isOf(Items.NETHERITE_LEGGINGS))
-            ) {
-                //String coat = ETFPlayerSkinUtils.SKIN_NAMESPACE + id + "_coat.png";
-
-                if (hasFatCoat) {
-                    customPlayerModel.fatJacket.copyTransform(model.jacket);
-                } else {
-                    customPlayerModel.jacket.copyTransform(model.jacket);
-                }
-                //perform texture features
-                VertexConsumer coatVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(coatIdentifier));
-                matrixStack.push();
-                if (hasFatCoat) {
-                    customPlayerModel.fatJacket.render(matrixStack, coatVert, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
-                } else {
-                    customPlayerModel.jacket.render(matrixStack, coatVert, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
-                }
-                    if (coatEnchantedIdentifier != null) {
-                        VertexConsumer enchantVert = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(coatEnchantedIdentifier), false, true);
-                        if (hasFatCoat) {
-                            customPlayerModel.fatJacket.render(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.16F);
-                        } else {
-                            customPlayerModel.jacket.render(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.16F);
-                        }
-                    }
-
-
-                    if (coatEmissiveIdentifier != null) {
-                        VertexConsumer emissVert;// = vertexConsumerProvider.getBuffer(RenderLayer.getBeaconBeam(emissive, true));
-                        if (ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT) {
-                            emissVert = vertexConsumerProvider.getBuffer(RenderLayer.getBeaconBeam(coatEmissiveIdentifier, true));
-                        } else {
-                            emissVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(coatEmissiveIdentifier));
-                        }
-
-                        if (hasFatCoat) {
-                            customPlayerModel.fatJacket.render(matrixStack, emissVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
-                        } else {
-                            customPlayerModel.jacket.render(matrixStack, emissVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
-                        }
-                    }
-
-                matrixStack.pop();
-            }
-
-            //perform texture features
-            if (hasEnchant && baseEnchantIdentifier != null) {
-                VertexConsumer enchantVert = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(
-                        switch (etfTextureOfFinalBaseSkin.currentTextureState){
-                            case BLINK, BLINK_PATCHED,APPLY_BLINK -> baseEnchantBlinkIdentifier;
-                            case BLINK2, BLINK2_PATCHED,APPLY_BLINK2 -> baseEnchantBlink2Identifier;
-                            default -> baseEnchantIdentifier;
-                }), false, true);
-                model.render(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.16F);
-            }
-            if (hasEmissives && etfTextureOfFinalBaseSkin != null) {
-                etfTextureOfFinalBaseSkin.renderEmissive(matrixStack,vertexConsumerProvider,model);
-            }
-        }
-    }
-
-    private void triggerSkinDownload(){
-        UUID id = player.getUuid();
-        try {
-            @SuppressWarnings("ConstantConditions") //in a try for a reason
-            PlayerListEntry playerListEntry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(id);
-            @SuppressWarnings("ConstantConditions") //in a try for a reason
-            GameProfile gameProfile = playerListEntry.getProfile();
-            Collection<Property> textureData = gameProfile.getProperties().get("textures");
-
-            String skinUrl = "";
-            String capeUrl = null;
-
-            for (Property p :
-                    textureData) {
-                JsonObject props = JsonParser.parseString(new String(Base64.getDecoder().decode((p.getValue())))).getAsJsonObject();
-                skinUrl = ((JsonObject) ((JsonObject) props.get("textures")).get("SKIN")).get("url").getAsString();
-                try {
-                    capeUrl = ((JsonObject) ((JsonObject) props.get("textures")).get("CAPE")).get("url").getAsString();
-                    hasVanillaCape = true;
-                } catch (Exception e) {
-                    //
-                }
-                break;
-            }
-
-            String finalSkinUrl = skinUrl;
-            CompletableFuture.runAsync(() -> {
-                HttpURLConnection httpURLConnection;
-                try {
-                    httpURLConnection = (HttpURLConnection) (new URL(finalSkinUrl)).openConnection(MinecraftClient.getInstance().getNetworkProxy());
-                    httpURLConnection.setDoInput(true);
-                    httpURLConnection.setDoOutput(false);
-                    httpURLConnection.connect();
-                    if (httpURLConnection.getResponseCode() / 100 == 2) {
-                        InputStream inputStream = httpURLConnection.getInputStream();
-
-                        MinecraftClient.getInstance().execute(() -> {
-                            try {
-                                NativeImage one = NativeImage.read(inputStream);
-                                this.receiveSkin(one);
-                            }catch(Exception e){
-                                ETFUtils2.logError("triggerSkinDownload()2 failed for player: " + player.getName().getString() + " retrying again later, reason was: "+e);
-                                this.skinFailed(false);
-                            }
-
-
-                        });
-                    }
-                } catch (Exception var6) {
-                    ETFUtils2.logError("triggerSkinDownload()3 failed for player:" + player.getName().getString() + "retrying again later");
-                    this.skinFailed(false);
-                }
-
-            }, Util.getMainWorkerExecutor());
-
-           if(this.hasVanillaCape) {
-               String finalCapeUrl = capeUrl;
-               CompletableFuture.runAsync(() -> {
-                   HttpURLConnection httpURLConnection;
-                   try {
-                       httpURLConnection = (HttpURLConnection) (new URL(finalCapeUrl)).openConnection(MinecraftClient.getInstance().getNetworkProxy());
-                       httpURLConnection.setDoInput(true);
-                       httpURLConnection.setDoOutput(false);
-                       httpURLConnection.connect();
-                       if (httpURLConnection.getResponseCode() / 100 == 2) {
-                           InputStream inputStream = httpURLConnection.getInputStream();
-
-                           MinecraftClient.getInstance().execute(() -> {
-                               try {
-                                   NativeImage one = NativeImage.read(inputStream);
-                                   this.receiveCape(one);
-                               } catch (Exception e) {
-                                   ETFUtils2.logError("triggerSkinDownload()4 failed for player:" + player.getName().getString() + "retrying again later");
-                                   this.skinFailed(false);
-                               }
-
-
-                           });
-                       }
-                   } catch (Exception var6) {
-                       ETFUtils2.logError("triggerSkinDownload()5 failed for player:" + player.getName().getString() + "retrying again later");
-                       this.skinFailed(false);
-                   }
-
-               }, Util.getMainWorkerExecutor());
-
-           }
-
-        }catch(Exception e){
-            ETFUtils2.logError("triggerSkinDownload() failed for player:"+player.getName().getString()+"retrying again later");
-            skinFailed(false);
-        }
-    }
-
-    private void initiateThirdPartyCapeDownload(String capeUrl){
-        CompletableFuture.runAsync(() -> {
-            HttpURLConnection httpURLConnection;
-            try {
-                httpURLConnection = (HttpURLConnection) (new URL(capeUrl)).openConnection(MinecraftClient.getInstance().getNetworkProxy());
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.setDoOutput(false);
-                httpURLConnection.connect();
-                if (httpURLConnection.getResponseCode() / 100 == 2) {
-                    InputStream inputStream = httpURLConnection.getInputStream();
-
-                    MinecraftClient.getInstance().execute(() -> {
-                        try {
-                            NativeImage one = NativeImage.read(inputStream);
-                            this.receiveThirdPartyCape(one);
-                        } catch (Exception e) {
-                            ETFUtils2.logError("ThirdPartyCapeDownload failed for player:" + player.getName().getString() + "retrying again later");
-                            //this.skinFailed(false);
-                        }
-                    });
-                }
-            } catch (Exception var6) {
-                ETFUtils2.logError("ThirdPartyCapeDownload failed for player:" + player.getName().getString() + "retrying again later");
-                //this.skinFailed(false);
-            }
-        }, Util.getMainWorkerExecutor());
-    }
-
-    public void receiveThirdPartyCape(@NotNull NativeImage capeImage){
-            //optifine resizes them for space cause expensive servers I guess
-            etfCapeIdentifier = new Identifier(SKIN_NAMESPACE, player.getUuid() + "_cape_third_party.png");
-            if (capeImage.getWidth() % capeImage.getHeight() != 0) {
-                //resize optifine image
-                int newWidth = 64;
-                while (newWidth < capeImage.getWidth()) {
-                    newWidth = newWidth + newWidth;
-                }
-                int newHeight = newWidth / 2;
-                NativeImage resizedImage = ETFUtils2.emptyNativeImage(newWidth, newHeight);
-                for (int x = 0; x < capeImage.getWidth(); x++) {
-                    for (int y = 0; y < capeImage.getHeight(); y++) {
-                        resizedImage.setColor(x, y, capeImage.getColor(x, y));
-                    }
-                }
-            }
-            ETFUtils2.registerNativeImageToIdentifier(capeImage, etfCapeIdentifier);
-
-            NativeImage checkCapeEmissive = returnMatchPixels(originalSkin, emissiveCapeBounds, capeImage);
-            //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
-            if (checkCapeEmissive != null) {
-                etfCapeEmissiveIdentifier = new Identifier(SKIN_NAMESPACE,  player.getUuid() + "_cape_third_party_e.png");
-                ETFUtils2.registerNativeImageToIdentifier(checkCapeEmissive, etfCapeEmissiveIdentifier);
-            }
-        NativeImage checkCapeEnchant = returnMatchPixels(originalSkin, enchantCapeBounds, capeImage);
-        //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
-        if (checkCapeEnchant != null) {
-            etfCapeEnchantedIdentifier = new Identifier(SKIN_NAMESPACE,  player.getUuid() + "_cape_third_party_enchant.png");
-            ETFUtils2.registerNativeImageToIdentifier(checkCapeEnchant, etfCapeEnchantedIdentifier);
-        }
-    }
-
-    private void skinFailed(boolean preventFurtherChecks){
-        if(preventFurtherChecks){
-            PLAYER_TEXTURE_MAP.put(player.getUuid(),null);
-        }else{
-            PLAYER_TEXTURE_MAP.removeEntryOnly(player.getUuid());
-        }
-        //this object is now unreachable
-    }
-
-
-    public void receiveSkin(@NotNull NativeImage skinImage){
-        this.originalSkin = skinImage;
-        if (!this.hasVanillaCape || this.originalCape != null) {
-            onTexturesDownloaded();
-        }
-
-
-    }
-    public void receiveCape(@NotNull NativeImage capeImage){
-        this.originalCape = capeImage;
-        if(this.originalSkin != null){
-            onTexturesDownloaded();
-        }
-    }
-
-    public void onTexturesDownloaded(){
-        UUID id = player.getUuid();
-        NativeImage modifiedCape;
-        if(originalCape != null) {
-            modifiedCape = ETFUtils2.emptyNativeImage(originalCape.getWidth(), originalCape.getHeight());
-            modifiedCape.copyFrom(originalCape);
-        }else{
-            modifiedCape = null;
-        }
-        NativeImage modifiedSkin = ETFUtils2.emptyNativeImage(originalSkin.getWidth(), originalSkin.getHeight());
-        modifiedSkin.copyFrom(originalSkin);
-
-        if (ETFConfigData.skinFeaturesPrintETFReadySkin && MinecraftClient.getInstance().player != null && id.equals(MinecraftClient.getInstance().player.getUuid())) {
-            ETFUtils2.logMessage("Skin feature layout is being applied to a copy of your skin please wait...", true);
-            printPlayerSkinCopyWithFeatureOverlay(originalSkin);
-            ETFConfigData.skinFeaturesPrintETFReadySkin = false;
-            ETFUtils2.saveConfig();
-        }
-        if (originalSkin != null) {
-            if (originalSkin.getColor(1, 16) == -16776961 &&
-                    originalSkin.getColor(0, 16) == -16777089 &&
-                    originalSkin.getColor(0, 17) == -16776961 &&
-                    originalSkin.getColor(2, 16) == -16711936 &&
-                    originalSkin.getColor(3, 16) == -16744704 &&
-                    originalSkin.getColor(3, 17) == -16711936 &&
-                    originalSkin.getColor(0, 18) == -65536 &&
-                    originalSkin.getColor(0, 19) == -8454144 &&
-                    originalSkin.getColor(1, 19) == -65536 &&
-                    originalSkin.getColor(3, 18) == -1 &&
-                    originalSkin.getColor(2, 19) == -1 &&
-                    originalSkin.getColor(3, 18) == -1
-            ) {
-                customPlayerModel = new ETFCustomPlayerFeatureModel<>();
-
-                hasFeatures = true;
-                ETFUtils2.logMessage("Found Player {" + player.getName().getString() + "} with texture features in skin.", false);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //locate and convert choices to ints
-                int[] choiceBoxChoices = {getSkinPixelColourToNumber(originalSkin.getColor(52, 16)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(52, 17)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(52, 18)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(52, 19)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(53, 16)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(53, 17))};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                boolean noseUpper = (getSkinPixelColourToNumber(originalSkin.getColor(43, 13)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(44, 13)) == 666 &&
-                        getSkinPixelColourToNumber(originalSkin.getColor(43, 14)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(44, 14)) == 666 &&
-                        getSkinPixelColourToNumber(originalSkin.getColor(43, 15)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(44, 15)) == 666);
-                boolean noseLower = (getSkinPixelColourToNumber(originalSkin.getColor(11, 13)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(12, 13)) == 666 &&
-                        getSkinPixelColourToNumber(originalSkin.getColor(11, 14)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(12, 14)) == 666 &&
-                        getSkinPixelColourToNumber(originalSkin.getColor(11, 15)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(12, 15)) == 666);
-                hasVillagerNose = noseLower || noseUpper;
-                if (noseUpper) {
-                    deletePixels(modifiedSkin, 43, 13, 44, 15);
-                }
-
-                //check for coat bottom
-                //pink to copy coat    light blue to remove from legs
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                NativeImage coatSkin=null;
-                int controllerCoat = choiceBoxChoices[1];
-                if (controllerCoat >= 1 && controllerCoat <= 8) {
-                    int lengthOfCoat = choiceBoxChoices[2] - 1;
-                    coatIdentifier = new Identifier(SKIN_NAMESPACE , id + "_coat.png");
-                    coatSkin = getCoatTexture(originalSkin, lengthOfCoat, controllerCoat >= 5);
-                    ETFUtils2.registerNativeImageToIdentifier(coatSkin, coatIdentifier);
-                    //UUID_PLAYER_HAS_COAT.put(id, true);
-                    if (controllerCoat == 2 || controllerCoat == 4 || controllerCoat == 6 || controllerCoat == 8) {
-                        //delete original pixel from skin
-                        deletePixels(modifiedSkin, 4, 32, 7, 35);
-                        deletePixels(modifiedSkin, 4, 48, 7, 51);
-                        deletePixels(modifiedSkin, 0, 36, 15, 36 + lengthOfCoat);
-                        deletePixels(modifiedSkin, 0, 52, 15, 52 + lengthOfCoat);
-                    }
-                    //red or green make fat coat
-                    hasFatCoat = controllerCoat == 3 || controllerCoat == 4 || controllerCoat == 7 || controllerCoat == 8;
-                } else {
-                    coatIdentifier = null;
-                }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                if (ETFConfigData.skinFeaturesEnableTransparency) {
-                    if (isSkinNotTooTransparent(originalSkin)) {
-                        allowThisETFBaseSkin =true;
-                    } else {
-                        ETFUtils2.logMessage("Skin was too transparent or had other problems", false);
-                        allowThisETFBaseSkin = false;
-                    }
-                }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //create and register blink textures this will allow the ETFTexture to build these automatically
-                NativeImage blinkSkinFile = null;
-                NativeImage blinkSkinFile2 = null;
-                Identifier blinkIdentifier=new Identifier( SKIN_NAMESPACE , id + "_blink.png");
-                Identifier blink2Identifier = new Identifier( SKIN_NAMESPACE , id + "_blink2.png");
-
-                int blinkChoice = choiceBoxChoices[0];
-                if (blinkChoice >= 1 && blinkChoice <= 5) {
-
-                    //check if lazy blink
-                    if (blinkChoice <= 2) {
-                        //blink 1 frame if either pink or blue optional
-                        blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("face1"), 1, getSkinPixelBounds("face3"));
-                        ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile,blinkIdentifier);
-
-                        //blink is 2 frames with blue optional
-                        if (blinkChoice == 2) {
-                            blinkSkinFile2 = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("face2"), 1, getSkinPixelBounds("face4"));
-                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile2, blink2Identifier);
-                        }
-                    } else {//optimized blink
-                        int eyeHeightTopDown = choiceBoxChoices[3];
-                        if (eyeHeightTopDown > 8 || eyeHeightTopDown < 1) {
-                            eyeHeightTopDown = 1;
-                        }
-                        //optimized 1p high eyes
-                        if (blinkChoice == 3) {
-                            blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEyeSmall"), eyeHeightTopDown);
-
-                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
-
-                        } else if (blinkChoice == 4) {
-                            blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye2High"), eyeHeightTopDown);
-                            blinkSkinFile2 = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye2High_second"), eyeHeightTopDown);
-
-
-                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
-                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile2, blink2Identifier);
-                        } else /*if( blinkChoice == 5)*/ {
-                            blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye4High"), eyeHeightTopDown);
-                            blinkSkinFile2 = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye4High_second"), eyeHeightTopDown);
-                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
-                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile2, blink2Identifier);
-                        }
-                    }
-                }
-                if(blinkSkinFile == null) blinkIdentifier = null;
-                if(blinkSkinFile2 == null) blink2Identifier = null;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                //check for cape recolor
-                int capeChoice1 = choiceBoxChoices[4];
-                // custom cape data experiment
-                // https://drive.google.com/uc?export=download&id=1rn1swLadqdMiLirz9Nrae0_VHFrTaJQe
-                //downloadImageFromUrl(player, "https://drive.google.com/uc?export=download&id=1rn1swLadqdMiLirz9Nrae0_VHFrTaJQe", "etf$CAPE",null,true);
-                if ((capeChoice1 >= 1 && capeChoice1 <= 3) || capeChoice1 == 666) {
-                    switch (capeChoice1) {
-                        case 1 -> //custom in skin
-                                modifiedCape = returnCustomTexturedCape(originalSkin);
-                        case 2 -> {
-                            modifiedCape = null;
-                            // minecraft capes mod
-                            //https://minecraftcapes.net/profile/fd22e573178c415a94fee476b328abfd/cape/
-                            initiateThirdPartyCapeDownload( "https://minecraftcapes.net/profile/" + player.getUuidAsString().replace("-", "") + "/cape/");
-
-                        }
-                        case 3 -> {
-                            modifiedCape = null;
-                            //  https://optifine.net/capes/Benjamin.png
-                            initiateThirdPartyCapeDownload( "https://optifine.net/capes/" + player.getName().getString() + ".png");
-
-                        }
-                        case 666 ->
-                                modifiedCape = ETFUtils2.getNativeImageElseNull(new Identifier("etf:textures/capes/error.png"));
-                        default -> {
-                           // cape = getNativeImageFromID(new Identifier("etf:capes/blank.png"));
-                        }
-                    }
-                }
-                if (modifiedCape != null) {
-                    if ((capeChoice1 >= 1 && capeChoice1 <= 3) || capeChoice1 == 666) {//custom chosen
-                        etfCapeIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_cape.png");
-                        ETFUtils2.registerNativeImageToIdentifier(modifiedCape,etfCapeIdentifier);
-                        //UUID_PLAYER_HAS_CUSTOM_CAPE.put(id, true);
-                    }
-                }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //check for marker choices
-                //  1 = Emissives,  2 = Enchanted
-                List<Integer> markerChoices = List.of(getSkinPixelColourToNumber(originalSkin.getColor(1, 17)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(1, 18)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(2, 17)),
-                        getSkinPixelColourToNumber(originalSkin.getColor(2, 18)));
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //emissives
-                Identifier emissiveIdentifier=null;
-                Identifier blinkEmissiveIdentifier=null;//new Identifier( SKIN_NAMESPACE , id + "_blink_e.png");
-                Identifier blink2EmissiveIdentifier = null;//new Identifier( SKIN_NAMESPACE , id + "_blink2_e.png");
-                hasEmissives = markerChoices.contains(1);
-                if (hasEmissives) {
-                    int[] boxChosenBounds = getSkinPixelBounds("marker" + (markerChoices.indexOf(1) + 1));
-                    emissiveCapeBounds = boxChosenBounds;
-                    NativeImage check = returnMatchPixels(originalSkin, boxChosenBounds);
-                    if (check != null) {
-                        emissiveIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_e.png");
-                        ETFUtils2.registerNativeImageToIdentifier(check,emissiveIdentifier);
-                        if (blinkSkinFile != null) {
-                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile, boxChosenBounds);
-                            if(checkBlink != null){
-                                blinkEmissiveIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_blink_e.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkBlink,blinkEmissiveIdentifier);
-                            }
-                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink_e.png");
-                        }
-                        if (blinkSkinFile2 != null) {
-                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile2, boxChosenBounds);
-                            if(checkBlink != null){
-                                blink2EmissiveIdentifier =new Identifier(  SKIN_NAMESPACE,  id + "_blink2_e.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkBlink,blink2EmissiveIdentifier);
-                            }
-                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink2_e.png");
-                        }
-                        if (coatSkin != null) {
-                            NativeImage checkCoat = returnMatchPixels(originalSkin, boxChosenBounds,coatSkin);
-
-                            //UUID_PLAYER_HAS_EMISSIVE_COAT.put(id, checkCoat != null);
-                            if (checkCoat != null) {
-                                coatEmissiveIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_coat_e.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkCoat, coatEmissiveIdentifier);
-                            }
-                        }
-                        if (modifiedCape != null) {
-
-                            NativeImage checkCape = returnMatchPixels(originalSkin, boxChosenBounds, modifiedCape);
-                            //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
-                            if (checkCape != null) {
-                                etfCapeEmissiveIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_cape_e.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkCape, coatEmissiveIdentifier);
-                            }
-                        }
-                    } else {
-                        hasEmissives = false;
-                    }
-                }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //enchant
-                hasEnchant = markerChoices.contains(2);
-                if (hasEnchant) {
-                    int[] boxChosenBounds = getSkinPixelBounds("marker" + (markerChoices.indexOf(2) + 1));
-                    enchantCapeBounds = boxChosenBounds;
-                    NativeImage check = returnMatchPixels(originalSkin, boxChosenBounds);
-                    if (check != null) {
-                        baseEnchantIdentifier =new Identifier(  SKIN_NAMESPACE,  id + "_enchant.png");
-                        ETFUtils2.registerNativeImageToIdentifier(check, baseEnchantIdentifier);
-                        if (blinkSkinFile != null) {
-                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile, boxChosenBounds);
-                            if(checkBlink != null){
-                                baseEnchantBlinkIdentifier =new Identifier(  SKIN_NAMESPACE,  id + "_blink_enchant.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkBlink,baseEnchantBlinkIdentifier);
-                            }
-                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink_e.png");
-                        }
-                        if (blinkSkinFile2 != null) {
-                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile2, boxChosenBounds);
-                            if(checkBlink != null){
-                                baseEnchantBlink2Identifier =new Identifier(  SKIN_NAMESPACE,  id + "_blink2_enchant.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkBlink,baseEnchantBlink2Identifier);
-                            }
-                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink2_e.png");
-                        }
-                        if (coatSkin != null) {
-                            NativeImage checkCoat = returnMatchPixels(originalSkin, boxChosenBounds,coatSkin);
-
-                            //UUID_PLAYER_HAS_EMISSIVE_COAT.put(id, checkCoat != null);
-                            if (checkCoat != null) {
-                                coatEnchantedIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_coat_enchant.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkCoat, coatEmissiveIdentifier);
-                            }
-                        }
-                        if (modifiedCape != null) {
-
-                            NativeImage checkCape = returnMatchPixels(originalSkin, boxChosenBounds, modifiedCape);
-                            //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
-                            if (checkCape != null) {
-
-                                etfCapeEnchantedIdentifier = new Identifier(  SKIN_NAMESPACE,  id + "_cape_enchant.png");
-                                ETFUtils2.registerNativeImageToIdentifier(checkCape, coatEmissiveIdentifier);
-                            }
-                        }
-                    } else {
-                        hasEmissives = false;
-                    }
-                }
-
-                modifiedSkinIdentifier =  new Identifier( SKIN_NAMESPACE , id + ".png");
-                ETFUtils2.registerNativeImageToIdentifier(modifiedSkin, modifiedSkinIdentifier);
-                //create etf texture with player initiator
-                etfTextureOfFinalBaseSkin = new ETFTexture(modifiedSkinIdentifier,blinkIdentifier,blink2Identifier,emissiveIdentifier,blinkEmissiveIdentifier,blink2EmissiveIdentifier);
-            }else{
-                skinFailed(true);
-            }
-        }else{
-            skinFailed(true);
-        }
-        isTextureReady = true;
-    }
-
-
 
     @Nullable
     private static NativeImage returnMatchPixels(NativeImage baseSkin, int[] boundsToCheck) {
@@ -771,11 +136,12 @@ public class ETFPlayerTexture {
         return foundAPixel ? imageToCheck : null;
     }
 
+
     private static NativeImage returnCustomTexturedCape(NativeImage skin) {
         NativeImage cape = ETFUtils2.emptyNativeImage(64, 32);
-        NativeImage elytra =ETFUtils2.getNativeImageElseNull(new Identifier("textures/entity/elytra.png"));
+        NativeImage elytra = ETFUtils2.getNativeImageElseNull(new Identifier("textures/entity/elytra.png"));
         if (elytra == null || elytra.getWidth() != 64 || elytra.getHeight() != 32) {
-            elytra =  ETFUtils2.getNativeImageElseNull(new Identifier("etf:textures/capes/default_elytra.png"));
+            elytra = ETFUtils2.getNativeImageElseNull(new Identifier("etf:textures/capes/default_elytra.png"));
         }//not else
         if (elytra != null) {
             cape.copyFrom(elytra);
@@ -851,7 +217,6 @@ public class ETFPlayerTexture {
         }
         return texture;
     }
-
 
     private static int countTransparentInBox(NativeImage img, int x1, int y1, int x2, int y2) {
         int counter = 0;
@@ -978,5 +343,611 @@ public class ETFPlayerTexture {
             //requires fab api to read from mod resources
             ETFUtils2.logError("Fabric API required for example skin printout, cancelling.", true);
         }
+    }
+
+    public boolean hasCustomCape() {
+        return etfCapeIdentifier != null;
+    }
+
+    @Nullable
+    public Identifier getBaseTextureIdentifierOrNullForVanilla(PlayerEntity player) {
+        this.player = player;//refresh player data
+        if (allowThisETFBaseSkin && canUseFeaturesForThisPlayer() && etfTextureOfFinalBaseSkin != null) {
+            return etfTextureOfFinalBaseSkin.getTextureIdentifier(player);
+        }
+        return null;
+    }
+
+    @Nullable
+    public Identifier getBaseTextureEmissiveIdentifierOrNullForNone() {
+        if (hasEmissives && canUseFeaturesForThisPlayer() && etfTextureOfFinalBaseSkin != null) {
+            return etfTextureOfFinalBaseSkin.getEmissiveIdentifierOfCurrentState();
+        }
+        return null;
+    }
+
+    public void renderCapeAndFeatures(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, PlayerEntityModel<AbstractClientPlayerEntity> model) {
+        if (canUseFeaturesForThisPlayer()) {
+            if (etfCapeIdentifier != null) {
+                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(etfCapeIdentifier));
+                model.renderCape(matrixStack, vertexConsumer, light, OverlayTexture.DEFAULT_UV);
+
+                if (etfCapeEmissiveIdentifier != null) {
+                    VertexConsumer emissiveVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(etfCapeEmissiveIdentifier));
+                    model.renderCape(matrixStack, emissiveVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV);
+                }
+                if (etfCapeEnchantedIdentifier != null) {
+                    VertexConsumer enchantVert = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(etfCapeEnchantedIdentifier), false, true);
+                    model.renderCape(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV);
+                }
+
+            }
+        }
+    }
+
+    public boolean canUseFeaturesForThisPlayer() {
+        return isTextureReady
+                && hasFeatures
+                && (//not on enemy team or doesn't matter
+                ETFConfigData.enableEnemyTeamPlayersSkinFeatures
+                        || (player.isTeammate(MinecraftClient.getInstance().player)
+                        || player.getScoreboardTeam() == null));
+    }
+
+    public void renderFeatures(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, PlayerEntityModel<PlayerEntity> model) {
+        if (canUseFeaturesForThisPlayer()) {
+            //villager nose
+            if (hasVillagerNose) {
+                customPlayerModel.nose.copyTransform(model.head);
+                Identifier villager = new Identifier("textures/entity/villager/villager.png");
+                VertexConsumer villagerVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntitySolid(villager));
+                customPlayerModel.nose.render(matrixStack, villagerVert, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+            }
+
+            //coat features
+            ItemStack armour = player.getInventory().getArmorStack(1);
+            if (coatIdentifier != null &&
+                    player.isPartVisible(PlayerModelPart.JACKET) &&
+                    !(armour.isOf(Items.CHAINMAIL_LEGGINGS) ||
+                            armour.isOf(Items.LEATHER_LEGGINGS) ||
+                            armour.isOf(Items.DIAMOND_LEGGINGS) ||
+                            armour.isOf(Items.GOLDEN_LEGGINGS) ||
+                            armour.isOf(Items.IRON_LEGGINGS) ||
+                            armour.isOf(Items.NETHERITE_LEGGINGS))
+            ) {
+                //String coat = ETFPlayerSkinUtils.SKIN_NAMESPACE + id + "_coat.png";
+
+                if (hasFatCoat) {
+                    customPlayerModel.fatJacket.copyTransform(model.jacket);
+                } else {
+                    customPlayerModel.jacket.copyTransform(model.jacket);
+                }
+                //perform texture features
+                VertexConsumer coatVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(coatIdentifier));
+                matrixStack.push();
+                if (hasFatCoat) {
+                    customPlayerModel.fatJacket.render(matrixStack, coatVert, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+                } else {
+                    customPlayerModel.jacket.render(matrixStack, coatVert, light, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+                }
+                if (coatEnchantedIdentifier != null) {
+                    VertexConsumer enchantVert = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(coatEnchantedIdentifier), false, true);
+                    if (hasFatCoat) {
+                        customPlayerModel.fatJacket.render(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.16F);
+                    } else {
+                        customPlayerModel.jacket.render(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.16F);
+                    }
+                }
+
+
+                if (coatEmissiveIdentifier != null) {
+                    VertexConsumer emissiveVert;// = vertexConsumerProvider.getBuffer(RenderLayer.getBeaconBeam(emissive, true));
+                    if (ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT) {
+                        emissiveVert = vertexConsumerProvider.getBuffer(RenderLayer.getBeaconBeam(coatEmissiveIdentifier, true));
+                    } else {
+                        emissiveVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(coatEmissiveIdentifier));
+                    }
+
+                    if (hasFatCoat) {
+                        customPlayerModel.fatJacket.render(matrixStack, emissiveVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+                    } else {
+                        customPlayerModel.jacket.render(matrixStack, emissiveVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+                    }
+                }
+
+                matrixStack.pop();
+            }
+
+            //perform texture features
+            if (hasEnchant && baseEnchantIdentifier != null) {
+                VertexConsumer enchantVert = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(
+                        switch (etfTextureOfFinalBaseSkin.currentTextureState) {
+                            case BLINK, BLINK_PATCHED, APPLY_BLINK -> baseEnchantBlinkIdentifier;
+                            case BLINK2, BLINK2_PATCHED, APPLY_BLINK2 -> baseEnchantBlink2Identifier;
+                            default -> baseEnchantIdentifier;
+                        }), false, true);
+                model.render(matrixStack, enchantVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.16F);
+            }
+            if (hasEmissives && etfTextureOfFinalBaseSkin != null) {
+                etfTextureOfFinalBaseSkin.renderEmissive(matrixStack, vertexConsumerProvider, model);
+            }
+        }
+    }
+
+    private void triggerSkinDownload() {
+        UUID id = player.getUuid();
+        try {
+            @SuppressWarnings("ConstantConditions") //in a try for a reason
+            PlayerListEntry playerListEntry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(id);
+            @SuppressWarnings("ConstantConditions") //in a try for a reason
+            GameProfile gameProfile = playerListEntry.getProfile();
+            Collection<Property> textureData = gameProfile.getProperties().get("textures");
+
+            String skinUrl = "";
+            String capeUrl = null;
+
+            for (Property p :
+                    textureData) {
+                JsonObject props = JsonParser.parseString(new String(Base64.getDecoder().decode((p.getValue())))).getAsJsonObject();
+                skinUrl = ((JsonObject) ((JsonObject) props.get("textures")).get("SKIN")).get("url").getAsString();
+                try {
+                    capeUrl = ((JsonObject) ((JsonObject) props.get("textures")).get("CAPE")).get("url").getAsString();
+                    hasVanillaCape = true;
+                } catch (Exception e) {
+                    //
+                }
+                break;
+            }
+
+            String finalSkinUrl = skinUrl;
+            CompletableFuture.runAsync(() -> {
+                HttpURLConnection httpURLConnection;
+                try {
+                    httpURLConnection = (HttpURLConnection) (new URL(finalSkinUrl)).openConnection(MinecraftClient.getInstance().getNetworkProxy());
+                    httpURLConnection.setDoInput(true);
+                    httpURLConnection.setDoOutput(false);
+                    httpURLConnection.connect();
+                    if (httpURLConnection.getResponseCode() / 100 == 2) {
+                        InputStream inputStream = httpURLConnection.getInputStream();
+
+                        MinecraftClient.getInstance().execute(() -> {
+                            try {
+                                NativeImage one = NativeImage.read(inputStream);
+                                this.receiveSkin(one);
+                            } catch (Exception e) {
+                                ETFUtils2.logError("triggerSkinDownload()2 failed for player: " + player.getName().getString() + " retrying again later, reason was: " + e);
+                                this.skinFailed(false);
+                            }
+
+
+                        });
+                    }
+                } catch (Exception var6) {
+                    ETFUtils2.logError("triggerSkinDownload()3 failed for player:" + player.getName().getString() + "retrying again later");
+                    this.skinFailed(false);
+                }
+
+            }, Util.getMainWorkerExecutor());
+
+            if (this.hasVanillaCape && capeUrl != null) {
+                String finalCapeUrl = capeUrl;
+                CompletableFuture.runAsync(() -> {
+                    HttpURLConnection httpURLConnection;
+                    try {
+                        httpURLConnection = (HttpURLConnection) (new URL(finalCapeUrl)).openConnection(MinecraftClient.getInstance().getNetworkProxy());
+                        httpURLConnection.setDoInput(true);
+                        httpURLConnection.setDoOutput(false);
+                        httpURLConnection.connect();
+                        if (httpURLConnection.getResponseCode() / 100 == 2) {
+                            InputStream inputStream = httpURLConnection.getInputStream();
+
+                            MinecraftClient.getInstance().execute(() -> {
+                                try {
+                                    NativeImage one = NativeImage.read(inputStream);
+                                    this.receiveCape(one);
+                                } catch (Exception e) {
+                                    ETFUtils2.logError("triggerSkinDownload()4 failed for player:" + player.getName().getString() + "retrying again later");
+                                    this.skinFailed(false);
+                                }
+
+
+                            });
+                        }
+                    } catch (Exception var6) {
+                        ETFUtils2.logError("triggerSkinDownload()5 failed for player:" + player.getName().getString() + "retrying again later");
+                        this.skinFailed(false);
+                    }
+
+                }, Util.getMainWorkerExecutor());
+
+            }
+
+        } catch (Exception e) {
+            ETFUtils2.logError("triggerSkinDownload() failed for player:" + player.getName().getString() + "retrying again later");
+            skinFailed(false);
+        }
+    }
+
+    private void initiateThirdPartyCapeDownload(String capeUrl) {
+        CompletableFuture.runAsync(() -> {
+            HttpURLConnection httpURLConnection;
+            try {
+                httpURLConnection = (HttpURLConnection) (new URL(capeUrl)).openConnection(MinecraftClient.getInstance().getNetworkProxy());
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.setDoOutput(false);
+                httpURLConnection.connect();
+                if (httpURLConnection.getResponseCode() / 100 == 2) {
+                    InputStream inputStream = httpURLConnection.getInputStream();
+
+                    MinecraftClient.getInstance().execute(() -> {
+                        try {
+                            NativeImage one = NativeImage.read(inputStream);
+                            this.receiveThirdPartyCape(one);
+                        } catch (Exception e) {
+                            ETFUtils2.logError("ThirdPartyCapeDownload failed for player:" + player.getName().getString() + "retrying again later");
+                            //this.skinFailed(false);
+                        }
+                    });
+                }
+            } catch (Exception var6) {
+                ETFUtils2.logError("ThirdPartyCapeDownload failed for player:" + player.getName().getString() + "retrying again later");
+                //this.skinFailed(false);
+            }
+        }, Util.getMainWorkerExecutor());
+    }
+
+    public void receiveThirdPartyCape(@NotNull NativeImage capeImage) {
+        //optifine resizes them for space cause expensive servers I guess
+        etfCapeIdentifier = new Identifier(SKIN_NAMESPACE, player.getUuid() + "_cape_third_party.png");
+        if (capeImage.getWidth() % capeImage.getHeight() != 0) {
+            //resize optifine image
+            int newWidth = 64;
+            while (newWidth < capeImage.getWidth()) {
+                newWidth = newWidth + newWidth;
+            }
+            int newHeight = newWidth / 2;
+            NativeImage resizedImage = ETFUtils2.emptyNativeImage(newWidth, newHeight);
+            for (int x = 0; x < capeImage.getWidth(); x++) {
+                for (int y = 0; y < capeImage.getHeight(); y++) {
+                    resizedImage.setColor(x, y, capeImage.getColor(x, y));
+                }
+            }
+        }
+        ETFUtils2.registerNativeImageToIdentifier(capeImage, etfCapeIdentifier);
+
+        NativeImage checkCapeEmissive = returnMatchPixels(originalSkin, emissiveCapeBounds, capeImage);
+        //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
+        if (checkCapeEmissive != null) {
+            etfCapeEmissiveIdentifier = new Identifier(SKIN_NAMESPACE, player.getUuid() + "_cape_third_party_e.png");
+            ETFUtils2.registerNativeImageToIdentifier(checkCapeEmissive, etfCapeEmissiveIdentifier);
+        }
+        NativeImage checkCapeEnchant = returnMatchPixels(originalSkin, enchantCapeBounds, capeImage);
+        //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
+        if (checkCapeEnchant != null) {
+            etfCapeEnchantedIdentifier = new Identifier(SKIN_NAMESPACE, player.getUuid() + "_cape_third_party_enchant.png");
+            ETFUtils2.registerNativeImageToIdentifier(checkCapeEnchant, etfCapeEnchantedIdentifier);
+        }
+    }
+
+    private void skinFailed(boolean preventFurtherChecks) {
+        if (preventFurtherChecks) {
+            PLAYER_TEXTURE_MAP.put(player.getUuid(), null);
+        } else {
+            PLAYER_TEXTURE_MAP.removeEntryOnly(player.getUuid());
+        }
+        //this object is now unreachable
+    }
+
+    public void receiveSkin(@NotNull NativeImage skinImage) {
+        this.originalSkin = skinImage;
+        if (!this.hasVanillaCape || this.originalCape != null) {
+            onTexturesDownloaded();
+        }
+
+
+    }
+
+    public void receiveCape(@NotNull NativeImage capeImage) {
+        this.originalCape = capeImage;
+        if (this.originalSkin != null) {
+            onTexturesDownloaded();
+        }
+    }
+
+    public void onTexturesDownloaded() {
+        UUID id = player.getUuid();
+        NativeImage modifiedCape;
+        if (originalCape != null) {
+            modifiedCape = ETFUtils2.emptyNativeImage(originalCape.getWidth(), originalCape.getHeight());
+            modifiedCape.copyFrom(originalCape);
+        } else {
+            modifiedCape = null;
+        }
+        NativeImage modifiedSkin = ETFUtils2.emptyNativeImage(originalSkin.getWidth(), originalSkin.getHeight());
+        modifiedSkin.copyFrom(originalSkin);
+
+        if (ETFConfigData.skinFeaturesPrintETFReadySkin && MinecraftClient.getInstance().player != null && id.equals(MinecraftClient.getInstance().player.getUuid())) {
+            ETFUtils2.logMessage("Skin feature layout is being applied to a copy of your skin please wait...", true);
+            printPlayerSkinCopyWithFeatureOverlay(originalSkin);
+            ETFConfigData.skinFeaturesPrintETFReadySkin = false;
+            ETFUtils2.saveConfig();
+        }
+        if (originalSkin != null) {
+            if (originalSkin.getColor(1, 16) == -16776961 &&
+                    originalSkin.getColor(0, 16) == -16777089 &&
+                    originalSkin.getColor(0, 17) == -16776961 &&
+                    originalSkin.getColor(2, 16) == -16711936 &&
+                    originalSkin.getColor(3, 16) == -16744704 &&
+                    originalSkin.getColor(3, 17) == -16711936 &&
+                    originalSkin.getColor(0, 18) == -65536 &&
+                    originalSkin.getColor(0, 19) == -8454144 &&
+                    originalSkin.getColor(1, 19) == -65536 &&
+                    originalSkin.getColor(3, 18) == -1 &&
+                    originalSkin.getColor(2, 19) == -1 &&
+                    originalSkin.getColor(3, 18) == -1
+            ) {
+                customPlayerModel = new ETFCustomPlayerFeatureModel<>();
+
+                hasFeatures = true;
+                ETFUtils2.logMessage("Found Player {" + player.getName().getString() + "} with texture features in skin.", false);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //locate and convert choices to ints
+                int[] choiceBoxChoices = {getSkinPixelColourToNumber(originalSkin.getColor(52, 16)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(52, 17)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(52, 18)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(52, 19)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(53, 16)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(53, 17))};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                boolean noseUpper = (getSkinPixelColourToNumber(originalSkin.getColor(43, 13)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(44, 13)) == 666 &&
+                        getSkinPixelColourToNumber(originalSkin.getColor(43, 14)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(44, 14)) == 666 &&
+                        getSkinPixelColourToNumber(originalSkin.getColor(43, 15)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(44, 15)) == 666);
+                boolean noseLower = (getSkinPixelColourToNumber(originalSkin.getColor(11, 13)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(12, 13)) == 666 &&
+                        getSkinPixelColourToNumber(originalSkin.getColor(11, 14)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(12, 14)) == 666 &&
+                        getSkinPixelColourToNumber(originalSkin.getColor(11, 15)) == 666 && getSkinPixelColourToNumber(originalSkin.getColor(12, 15)) == 666);
+                hasVillagerNose = noseLower || noseUpper;
+                if (noseUpper) {
+                    deletePixels(modifiedSkin, 43, 13, 44, 15);
+                }
+
+                //check for coat bottom
+                //pink to copy coat    light blue to remove from legs
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                NativeImage coatSkin = null;
+                int controllerCoat = choiceBoxChoices[1];
+                if (controllerCoat >= 1 && controllerCoat <= 8) {
+                    int lengthOfCoat = choiceBoxChoices[2] - 1;
+                    coatIdentifier = new Identifier(SKIN_NAMESPACE, id + "_coat.png");
+                    coatSkin = getCoatTexture(originalSkin, lengthOfCoat, controllerCoat >= 5);
+                    ETFUtils2.registerNativeImageToIdentifier(coatSkin, coatIdentifier);
+                    //UUID_PLAYER_HAS_COAT.put(id, true);
+                    if (controllerCoat == 2 || controllerCoat == 4 || controllerCoat == 6 || controllerCoat == 8) {
+                        //delete original pixel from skin
+                        deletePixels(modifiedSkin, 4, 32, 7, 35);
+                        deletePixels(modifiedSkin, 4, 48, 7, 51);
+                        deletePixels(modifiedSkin, 0, 36, 15, 36 + lengthOfCoat);
+                        deletePixels(modifiedSkin, 0, 52, 15, 52 + lengthOfCoat);
+                    }
+                    //red or green make fat coat
+                    hasFatCoat = controllerCoat == 3 || controllerCoat == 4 || controllerCoat == 7 || controllerCoat == 8;
+                } else {
+                    coatIdentifier = null;
+                }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                if (ETFConfigData.skinFeaturesEnableTransparency) {
+                    if (isSkinNotTooTransparent(originalSkin)) {
+                        allowThisETFBaseSkin = true;
+                    } else {
+                        ETFUtils2.logMessage("Skin was too transparent or had other problems", false);
+                        allowThisETFBaseSkin = false;
+                    }
+                }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //create and register blink textures this will allow the ETFTexture to build these automatically
+                NativeImage blinkSkinFile = null;
+                NativeImage blinkSkinFile2 = null;
+                Identifier blinkIdentifier = new Identifier(SKIN_NAMESPACE, id + "_blink.png");
+                Identifier blink2Identifier = new Identifier(SKIN_NAMESPACE, id + "_blink2.png");
+
+                int blinkChoice = choiceBoxChoices[0];
+                if (blinkChoice >= 1 && blinkChoice <= 5) {
+
+                    //check if lazy blink
+                    if (blinkChoice <= 2) {
+                        //blink 1 frame if either pink or blue optional
+                        blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("face1"), 1, getSkinPixelBounds("face3"));
+                        ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
+
+                        //blink is 2 frames with blue optional
+                        if (blinkChoice == 2) {
+                            blinkSkinFile2 = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("face2"), 1, getSkinPixelBounds("face4"));
+                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile2, blink2Identifier);
+                        }
+                    } else {//optimized blink
+                        int eyeHeightTopDown = choiceBoxChoices[3];
+                        if (eyeHeightTopDown > 8 || eyeHeightTopDown < 1) {
+                            eyeHeightTopDown = 1;
+                        }
+                        //optimized 1p high eyes
+                        if (blinkChoice == 3) {
+                            blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEyeSmall"), eyeHeightTopDown);
+
+                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
+
+                        } else if (blinkChoice == 4) {
+                            blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye2High"), eyeHeightTopDown);
+                            blinkSkinFile2 = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye2High_second"), eyeHeightTopDown);
+
+
+                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
+                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile2, blink2Identifier);
+                        } else /*if( blinkChoice == 5)*/ {
+                            blinkSkinFile = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye4High"), eyeHeightTopDown);
+                            blinkSkinFile2 = returnOptimizedBlinkFace(originalSkin, getSkinPixelBounds("optimizedEye4High_second"), eyeHeightTopDown);
+                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile, blinkIdentifier);
+                            ETFUtils2.registerNativeImageToIdentifier(blinkSkinFile2, blink2Identifier);
+                        }
+                    }
+                }
+                if (blinkSkinFile == null) blinkIdentifier = null;
+                if (blinkSkinFile2 == null) blink2Identifier = null;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                //check for cape recolor
+                int capeChoice1 = choiceBoxChoices[4];
+                // custom cape data experiment
+                // https://drive.google.com/uc?export=download&id=1rn1swLadqdMiLirz9Nrae0_VHFrTaJQe
+                //downloadImageFromUrl(player, "https://drive.google.com/uc?export=download&id=1rn1swLadqdMiLirz9Nrae0_VHFrTaJQe", "etf$CAPE",null,true);
+                if ((capeChoice1 >= 1 && capeChoice1 <= 3) || capeChoice1 == 666) {
+                    switch (capeChoice1) {
+                        case 1 -> //custom in skin
+                                modifiedCape = returnCustomTexturedCape(originalSkin);
+                        case 2 -> {
+                            modifiedCape = null;
+                            // minecraft capes mod
+                            //https://minecraftcapes.net/profile/fd22e573178c415a94fee476b328abfd/cape/
+                            initiateThirdPartyCapeDownload("https://minecraftcapes.net/profile/" + player.getUuidAsString().replace("-", "") + "/cape/");
+
+                        }
+                        case 3 -> {
+                            modifiedCape = null;
+                            //  https://optifine.net/capes/Benjamin.png
+                            initiateThirdPartyCapeDownload("https://optifine.net/capes/" + player.getName().getString() + ".png");
+
+                        }
+                        case 666 ->
+                                modifiedCape = ETFUtils2.getNativeImageElseNull(new Identifier("etf:textures/capes/error.png"));
+                        default -> {
+                            // cape = getNativeImageFromID(new Identifier("etf:capes/blank.png"));
+                        }
+                    }
+                }
+                if (modifiedCape != null) {
+                    if ((capeChoice1 >= 1 && capeChoice1 <= 3) || capeChoice1 == 666) {//custom chosen
+                        etfCapeIdentifier = new Identifier(SKIN_NAMESPACE, id + "_cape.png");
+                        ETFUtils2.registerNativeImageToIdentifier(modifiedCape, etfCapeIdentifier);
+                        //UUID_PLAYER_HAS_CUSTOM_CAPE.put(id, true);
+                    }
+                }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //check for marker choices
+                //  1 = Emissives,  2 = Enchanted
+                List<Integer> markerChoices = List.of(getSkinPixelColourToNumber(originalSkin.getColor(1, 17)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(1, 18)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(2, 17)),
+                        getSkinPixelColourToNumber(originalSkin.getColor(2, 18)));
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //emissives
+                Identifier emissiveIdentifier = null;
+                Identifier blinkEmissiveIdentifier = null;//new Identifier( SKIN_NAMESPACE , id + "_blink_e.png");
+                Identifier blink2EmissiveIdentifier = null;//new Identifier( SKIN_NAMESPACE , id + "_blink2_e.png");
+                hasEmissives = markerChoices.contains(1);
+                if (hasEmissives) {
+                    int[] boxChosenBounds = getSkinPixelBounds("marker" + (markerChoices.indexOf(1) + 1));
+                    emissiveCapeBounds = boxChosenBounds;
+                    NativeImage check = returnMatchPixels(originalSkin, boxChosenBounds);
+                    if (check != null) {
+                        emissiveIdentifier = new Identifier(SKIN_NAMESPACE, id + "_e.png");
+                        ETFUtils2.registerNativeImageToIdentifier(check, emissiveIdentifier);
+                        if (blinkSkinFile != null) {
+                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile, boxChosenBounds);
+                            if (checkBlink != null) {
+                                blinkEmissiveIdentifier = new Identifier(SKIN_NAMESPACE, id + "_blink_e.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkBlink, blinkEmissiveIdentifier);
+                            }
+                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink_e.png");
+                        }
+                        if (blinkSkinFile2 != null) {
+                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile2, boxChosenBounds);
+                            if (checkBlink != null) {
+                                blink2EmissiveIdentifier = new Identifier(SKIN_NAMESPACE, id + "_blink2_e.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkBlink, blink2EmissiveIdentifier);
+                            }
+                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink2_e.png");
+                        }
+                        if (coatSkin != null) {
+                            NativeImage checkCoat = returnMatchPixels(originalSkin, boxChosenBounds, coatSkin);
+
+                            //UUID_PLAYER_HAS_EMISSIVE_COAT.put(id, checkCoat != null);
+                            if (checkCoat != null) {
+                                coatEmissiveIdentifier = new Identifier(SKIN_NAMESPACE, id + "_coat_e.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkCoat, coatEmissiveIdentifier);
+                            }
+                        }
+                        if (modifiedCape != null) {
+
+                            NativeImage checkCape = returnMatchPixels(originalSkin, boxChosenBounds, modifiedCape);
+                            //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
+                            if (checkCape != null) {
+                                etfCapeEmissiveIdentifier = new Identifier(SKIN_NAMESPACE, id + "_cape_e.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkCape, coatEmissiveIdentifier);
+                            }
+                        }
+                    } else {
+                        hasEmissives = false;
+                    }
+                }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //enchant
+                hasEnchant = markerChoices.contains(2);
+                if (hasEnchant) {
+                    int[] boxChosenBounds = getSkinPixelBounds("marker" + (markerChoices.indexOf(2) + 1));
+                    enchantCapeBounds = boxChosenBounds;
+                    NativeImage check = returnMatchPixels(originalSkin, boxChosenBounds);
+                    if (check != null) {
+                        baseEnchantIdentifier = new Identifier(SKIN_NAMESPACE, id + "_enchant.png");
+                        ETFUtils2.registerNativeImageToIdentifier(check, baseEnchantIdentifier);
+                        if (blinkSkinFile != null) {
+                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile, boxChosenBounds);
+                            if (checkBlink != null) {
+                                baseEnchantBlinkIdentifier = new Identifier(SKIN_NAMESPACE, id + "_blink_enchant.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkBlink, baseEnchantBlinkIdentifier);
+                            }
+                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink_e.png");
+                        }
+                        if (blinkSkinFile2 != null) {
+                            NativeImage checkBlink = returnMatchPixels(blinkSkinFile2, boxChosenBounds);
+                            if (checkBlink != null) {
+                                baseEnchantBlink2Identifier = new Identifier(SKIN_NAMESPACE, id + "_blink2_enchant.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkBlink, baseEnchantBlink2Identifier);
+                            }
+                            //registerNativeImageToIdentifier(Objects.requireNonNullElseGet(checkBlink, ETFUtils2::emptyNativeImage), SKIN_NAMESPACE + id + "_blink2_e.png");
+                        }
+                        if (coatSkin != null) {
+                            NativeImage checkCoat = returnMatchPixels(originalSkin, boxChosenBounds, coatSkin);
+
+                            //UUID_PLAYER_HAS_EMISSIVE_COAT.put(id, checkCoat != null);
+                            if (checkCoat != null) {
+                                coatEnchantedIdentifier = new Identifier(SKIN_NAMESPACE, id + "_coat_enchant.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkCoat, coatEmissiveIdentifier);
+                            }
+                        }
+                        if (modifiedCape != null) {
+
+                            NativeImage checkCape = returnMatchPixels(originalSkin, boxChosenBounds, modifiedCape);
+                            //UUID_PLAYER_HAS_EMISSIVE_CAPE.put(id, checkCape != null);
+                            if (checkCape != null) {
+
+                                etfCapeEnchantedIdentifier = new Identifier(SKIN_NAMESPACE, id + "_cape_enchant.png");
+                                ETFUtils2.registerNativeImageToIdentifier(checkCape, coatEmissiveIdentifier);
+                            }
+                        }
+                    } else {
+                        hasEmissives = false;
+                    }
+                }
+
+                Identifier modifiedSkinIdentifier = new Identifier(SKIN_NAMESPACE, id + ".png");
+                ETFUtils2.registerNativeImageToIdentifier(modifiedSkin, modifiedSkinIdentifier);
+                //create etf texture with player initiator
+                etfTextureOfFinalBaseSkin = new ETFTexture(modifiedSkinIdentifier, blinkIdentifier, blink2Identifier, emissiveIdentifier, blinkEmissiveIdentifier, blink2EmissiveIdentifier);
+            } else {
+                skinFailed(true);
+            }
+        } else {
+            skinFailed(true);
+        }
+        isTextureReady = true;
     }
 }

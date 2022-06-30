@@ -40,7 +40,8 @@ public abstract class MixinSheepWoolFeatureRenderer extends FeatureRenderer<Shee
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, SheepEntity sheepEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci, MinecraftClient minecraftClient, boolean bl, VertexConsumer vertexConsumer) {
         //UUID id = livingEntity.getUuid();
         //todo no colour logic here for now, packs can set textures for this with the color properties anyway
-        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
+        if (thisETFTexture != null)
+            thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
     }
 
     @Inject(

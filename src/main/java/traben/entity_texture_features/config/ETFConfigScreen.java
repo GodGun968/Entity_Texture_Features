@@ -213,11 +213,11 @@ public class ETFConfigScreen {
 
         category.addEntry(playerSkinSettings.build());
 
-        category.addEntry(entryBuilder.startEnumSelector(Text.translatable("config." + ETFClient.MOD_ID + ".enchanted_potion_effects.title"), ETFConfig.EnchantedPotionEffectsEnum.class, ETFConfigData.enchantedPotionEffects)
-                .setDefaultValue(ETFConfig.EnchantedPotionEffectsEnum.NONE)
-                .setTooltip(Text.translatable("config." + ETFClient.MOD_ID + ".enchanted_potion_effects.tooltip")) // Optional: Shown when the user hover over this option
-                .setSaveConsumer(newValue -> ETFConfigData.enchantedPotionEffects = newValue)
-                .build());
+//        category.addEntry(entryBuilder.startEnumSelector(Text.translatable("config." + ETFClient.MOD_ID + ".enchanted_potion_effects.title"), ETFConfig.EnchantedPotionEffectsEnum.class, ETFConfigData.enchantedPotionEffects)
+//                .setDefaultValue(ETFConfig.EnchantedPotionEffectsEnum.NONE)
+//                .setTooltip(Text.translatable("config." + ETFClient.MOD_ID + ".enchanted_potion_effects.tooltip")) // Optional: Shown when the user hover over this option
+//                .setSaveConsumer(newValue -> ETFConfigData.enchantedPotionEffects = newValue)
+//                .build());
 
         category.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config." + ETFClient.MOD_ID + ".elytra_thickness_fix.title"), ETFConfigData.elytraThicknessFix)
                 .setDefaultValue(false) // Recommended: Used when user click "Reset"

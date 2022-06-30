@@ -19,12 +19,6 @@ public class ETFLruCache<X, Y> {
 
     public boolean containsKey(X key) {
         return this.cache.containsKey(key);
-//        if (cache.containsKey(key)) {
-//            cache.putAndMoveToFirst(key, cache.get(key));
-//            return true;
-//        } else {
-//            return false;
-//        }
     }
 
     @Nullable
@@ -34,11 +28,11 @@ public class ETFLruCache<X, Y> {
     }
 
     public void put(X key, Y value) {
-        if (cache.size() >= capacity * (ETFConfigData.advanced_IncreaseCacheSizeModifier > 1 ? ETFConfigData.advanced_IncreaseCacheSizeModifier : 1)  ) {
+        if (cache.size() >= capacity * (ETFConfigData.advanced_IncreaseCacheSizeModifier > 1 ? ETFConfigData.advanced_IncreaseCacheSizeModifier : 1)) {
             X lastKey = cache.lastKey();
-            if(lastKey instanceof ETFCacheKey ETFKey) {
+            if (lastKey instanceof ETFCacheKey ETFKey) {
                 ETFManager.removeThisEntityDataFromAllStorage(ETFKey);
-            }else{
+            } else {
                 cache.remove(lastKey);
             }
         }
@@ -54,7 +48,7 @@ public class ETFLruCache<X, Y> {
         return cache.size();
     }
 
-    public void removeEntryOnly(X key){
+    public void removeEntryOnly(X key) {
         cache.remove(key);
     }
 

@@ -9,9 +9,7 @@ import net.minecraft.client.render.entity.model.WardenEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.util.Identifier;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -25,9 +23,6 @@ public abstract class MixinWardenFeatureRenderer<T extends WardenEntity, M exten
 
 
     WardenEntity etf$entity = null;
-    @Shadow
-    @Final
-    private Identifier texture;
     private ETFTexture thisETFTexture = null;
 
     public MixinWardenFeatureRenderer(FeatureRendererContext<T, M> context) {
@@ -40,7 +35,8 @@ public abstract class MixinWardenFeatureRenderer<T extends WardenEntity, M exten
 
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, T wardenEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci, VertexConsumer vertexConsumer) {
         //UUID id = livingEntity.getUuid();
-        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
+        if (thisETFTexture != null)
+            thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
     }
 
     @Inject(

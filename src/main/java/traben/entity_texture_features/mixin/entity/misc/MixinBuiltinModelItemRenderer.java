@@ -76,15 +76,15 @@ public abstract class MixinBuiltinModelItemRenderer implements SynchronousResour
             if (ETFConfigData.enableTridents && ETFConfigData.enableEmissiveTextures) {
                 String path = TridentEntityModel.TEXTURE.toString();
                 String name = stack.hasCustomName() ? "_" + stack.getName().getString().trim().replaceAll("\s", "_").toLowerCase().replaceAll("[^a-z\\d/_.-]", "") : "";
-                Identifier file = new Identifier( path.replace(".png", name + "_e.png"));
-                if(MinecraftClient.getInstance().getResourceManager().getResource(file).isPresent()) {
+                Identifier file = new Identifier(path.replace(".png", name + "_e.png"));
+                if (MinecraftClient.getInstance().getResourceManager().getResource(file).isPresent()) {
                     matrices.push();
                     matrices.scale(1.0F, -1.0F, -1.0F);
                     VertexConsumer consumer = vertexConsumers.getBuffer(
                             ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT ?
                                     RenderLayer.getBeaconBeam(file, true) :
                                     RenderLayer.getEntityTranslucent(file));
-                    this.modelTrident.render(matrices,consumer,LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+                    this.modelTrident.render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
                     //ETFUtils.generalEmissiveRenderModel(matrices, vertexConsumers, fileString, this.modelTrident);
                     matrices.pop();
                 }
@@ -94,26 +94,26 @@ public abstract class MixinBuiltinModelItemRenderer implements SynchronousResour
         } else if (stack.isOf(Items.SHIELD)) {
             if (ETFConfigData.specialEmissiveShield && ETFConfigData.enableEmissiveTextures) {
 
-                    boolean bl = BlockItem.getBlockEntityNbt(stack) != null;
-                    Identifier file = new Identifier( bl ? "textures/entity/shield_base_e.png" : "textures/entity/shield_base_nopattern_e.png");
-                    if(MinecraftClient.getInstance().getResourceManager().getResource(file).isPresent()) {
-                        matrices.push();
-                        matrices.scale(1.0F, -1.0F, -1.0F);
-                        VertexConsumer consumer = vertexConsumers.getBuffer(
-                                ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT ?
-                                        RenderLayer.getBeaconBeam(file, true) :
-                                        RenderLayer.getEntityTranslucent(file));
+                boolean bl = BlockItem.getBlockEntityNbt(stack) != null;
+                Identifier file = new Identifier(bl ? "textures/entity/shield_base_e.png" : "textures/entity/shield_base_nopattern_e.png");
+                if (MinecraftClient.getInstance().getResourceManager().getResource(file).isPresent()) {
+                    matrices.push();
+                    matrices.scale(1.0F, -1.0F, -1.0F);
+                    VertexConsumer consumer = vertexConsumers.getBuffer(
+                            ETFManager.getEmissiveMode() == ETFManager.EmissiveRenderModes.BRIGHT ?
+                                    RenderLayer.getBeaconBeam(file, true) :
+                                    RenderLayer.getEntityTranslucent(file));
 
-                        //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getHandle(), false);
-                        modelShield.getHandle().render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
-                        modelShield.render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+                    //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getHandle(), false);
+                    modelShield.getHandle().render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+                    modelShield.render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
 
-                        //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getPlate(), false);
-                        if (!bl)
-                            modelShield.getPlate().render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
-                        //todo banner patterns implementation
-                        matrices.pop();
-                    }
+                    //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, fileString, modelShield.getPlate(), false);
+                    if (!bl)
+                        modelShield.getPlate().render(matrices, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, overlay, 1, 1, 1, 1);
+                    //todo banner patterns implementation
+                    matrices.pop();
+                }
 
             }
 

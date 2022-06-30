@@ -40,42 +40,46 @@ import static traben.entity_texture_features.texture_handlers.ETFManager.TEXTURE
 
 @Mixin(ElytraFeatureRenderer.class)
 public abstract class MixinElytraFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
-    public MixinElytraFeatureRenderer(FeatureRendererContext<T, M> context) {
-        super(context);
-    }
+    //the sneaky 3 way boolean
+    Boolean etf$vanillaVisibility = null;
 
     //todo rewrite
-
     @Final
     @Shadow
     private ElytraEntityModel<T> elytra;
+    private ETFTexture thisOtherETFTexture = null;
+    private ETFTexture thisETFTexture = null;
+    private ModelPart etf$rightWing = null;
+    private ModelPart etf$leftWing = null;
+
+    public MixinElytraFeatureRenderer(FeatureRendererContext<T, M> context) {
+        super(context);
+    }
 
     @ModifyArg(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderLayer;getArmorCutoutNoCull(Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/render/RenderLayer;"))
     private Identifier etf$returnPatchedAlways(Identifier texture) {
         //renderlayers cause issue with elytra emissive even in vanilla so always patch
         thisETFTexture = ETFManager.getETFTexture(texture, null, ETFManager.TextureSource.ENTITY_FEATURE);
-        return thisETFTexture.getTextureIdentifier(null,ETFConfigData.enableEmissiveTextures);
+        return thisETFTexture.getTextureIdentifier(null, ETFConfigData.enableEmissiveTextures);
 
 
-       // return texture;
+        // return texture;
     }
-    private ETFTexture thisOtherETFTexture = null;
-    private ETFTexture thisETFTexture = null;
 
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/ElytraEntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V",
                     shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void etf$checkForAndRenderDifferentWings(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, T livingEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci, ItemStack itemStack, Identifier identifier, VertexConsumer vertexConsumer) {
-        if (ETFConfigData.enableElytra ) {
+        if (ETFConfigData.enableElytra) {
             //System.out.println(identifier.toString());
-            if(!TEXTURE_MAP_TO_OPPOSITE_ELYTRA.containsKey(identifier)) {
+            if (!TEXTURE_MAP_TO_OPPOSITE_ELYTRA.containsKey(identifier)) {
                 //first time check other texture exists and put null if not
 
                 Identifier otherWingIdentifier = new Identifier(identifier.toString().replace(".png", "_left.png"));
                 Optional<Resource> otherWing = MinecraftClient.getInstance().getResourceManager().getResource(otherWingIdentifier);
                 Optional<Resource> thisWing = MinecraftClient.getInstance().getResourceManager().getResource(identifier);
-                if(otherWing.isPresent() && thisWing.isPresent()) {
+                if (otherWing.isPresent() && thisWing.isPresent()) {
                     String otherName = otherWing.get().getResourcePackName();
                     String thisName = thisWing.get().getResourcePackName();
                     ObjectSet<String> set = new ObjectOpenHashSet<>();
@@ -87,22 +91,22 @@ public abstract class MixinElytraFeatureRenderer<T extends LivingEntity, M exten
                 }
                 TEXTURE_MAP_TO_OPPOSITE_ELYTRA.putIfAbsent(identifier, null);
             }
-            if(TEXTURE_MAP_TO_OPPOSITE_ELYTRA.containsKey(identifier)){
-                if(TEXTURE_MAP_TO_OPPOSITE_ELYTRA.get(identifier) != null) {
+            if (TEXTURE_MAP_TO_OPPOSITE_ELYTRA.containsKey(identifier)) {
+                if (TEXTURE_MAP_TO_OPPOSITE_ELYTRA.get(identifier) != null) {
                     thisETFTexture = ETFManager.getETFTexture(identifier, null, ETFManager.TextureSource.ENTITY_FEATURE);
                     //remove one wing from vanilla render and render second
                     thisOtherETFTexture = TEXTURE_MAP_TO_OPPOSITE_ELYTRA.get(identifier);
-                        ImmutableList<ModelPart> wingParts = (ImmutableList<ModelPart>) ((ElytraEntityModelAccessor) elytra).callGetBodyParts();
-                        //0=left  1=right
-                        etf$leftWing = wingParts.get(0);
-                        etf$rightWing = wingParts.get(1);
-                        etf$vanillaVisibility = etf$leftWing.hidden;
+                    ImmutableList<ModelPart> wingParts = (ImmutableList<ModelPart>) ((ElytraEntityModelAccessor) elytra).callGetBodyParts();
+                    //0=left  1=right
+                    etf$leftWing = wingParts.get(0);
+                    etf$rightWing = wingParts.get(1);
+                    etf$vanillaVisibility = etf$leftWing.hidden;
 
-                        etf$rightWing.hidden = true;
-                        VertexConsumer vertexConsumerOther = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(thisOtherETFTexture.getTextureIdentifier(null, ETFConfigData.enableEmissiveTextures)), false, itemStack.hasGlint());
-                        this.elytra.render(matrixStack, vertexConsumerOther, i, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
-                        etf$rightWing.hidden = etf$vanillaVisibility;
-                        etf$leftWing.hidden = true;
+                    etf$rightWing.hidden = true;
+                    VertexConsumer vertexConsumerOther = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(thisOtherETFTexture.getTextureIdentifier(null, ETFConfigData.enableEmissiveTextures)), false, itemStack.hasGlint());
+                    this.elytra.render(matrixStack, vertexConsumerOther, i, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+                    etf$rightWing.hidden = etf$vanillaVisibility;
+                    etf$leftWing.hidden = true;
 
 
                 }//else do nothing
@@ -110,38 +114,27 @@ public abstract class MixinElytraFeatureRenderer<T extends LivingEntity, M exten
         }
     }
 
-    private ModelPart etf$rightWing = null;
-    private ModelPart etf$leftWing = null;
-    //the sneaky 3 way boolean
-    Boolean etf$vanillaVisibility = null;
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/ElytraEntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V",
                     shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, T livingEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci, ItemStack itemStack, Identifier identifier, VertexConsumer vertexConsumer) {
-//        if(etf$vanillaVisibility != null){
-//
-//            etf$leftWing.visible = etf$vanillaVisibility;
-//        }
+
         if (ETFConfigData.enableElytra && ETFConfigData.enableEmissiveTextures && thisETFTexture != null) {
-            if(etf$vanillaVisibility != null){
-                //only the case if IDENTIFIER_OPPOSITE_ELYTRA_IDENTIFIER not null no need to check
-                //ETFUtils.generalEmissiveRenderPart(matrixStack, vertexConsumerProvider, IDENTIFIER_OPPOSITE_ELYTRA_IDENTIFIER.get(identifier), etf$leftWing,false);
-                //ETFUtils.generalEmissiveRenderPart(matrixStack, vertexConsumerProvider, identifier, etf$rightWing,false);
+            if (etf$vanillaVisibility != null) {
 
                 //left is invis already
                 thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, elytra);
-                //ETFUtils.generalEmissiveRenderModel(matrixStack, vertexConsumerProvider, etf$returnPatchedAlways(identifier), elytra);
+
                 etf$leftWing.hidden = etf$vanillaVisibility;
                 etf$rightWing.hidden = true;
                 thisOtherETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, elytra);
-                //ETFUtils.generalEmissiveRenderModel(matrixStack, vertexConsumerProvider, etf$returnPatchedAlways(TEXTURE_MAP_TO_OPPOSITE_ELYTRA.get(identifier)), elytra);
+
                 etf$rightWing.hidden = etf$vanillaVisibility;
                 etf$vanillaVisibility = null;
 
-            }else {
+            } else {
                 //easy vanilla
                 thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, elytra);
-                //ETFUtils.generalEmissiveRenderModel(matrixStack, vertexConsumerProvider, etf$returnPatchedAlways(identifier), elytra);
             }
         }
     }

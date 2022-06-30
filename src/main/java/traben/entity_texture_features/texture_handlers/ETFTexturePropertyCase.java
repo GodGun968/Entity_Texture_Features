@@ -29,7 +29,7 @@ public class ETFTexturePropertyCase {
     private final String[] NAME_STRINGS;//add
     private final String[] PROFESSION_VALUES;
     private final String[] COLOR_VALUES;//add
-    private final int IS_BABY; // 0 1 2 - dont true false
+    private final int IS_BABY; // 0 1 2 - don't true false
     private final int WEATHER_TYPE; //0,1,2,3 - no clear rain thunder
     private final String[] HEALTH_RANGE_STRINGS;
     private final Integer[] MOON_PHASE_VALUES;
@@ -141,7 +141,7 @@ public class ETFTexturePropertyCase {
         if (!ETFConfigData.restrictUpdateProperties) {
             isUpdate = false;
         }
-        ETFCacheKey CacheId = new ETFCacheKey(entity.getUuid(),null);
+        ETFCacheKey CacheId = new ETFCacheKey(entity.getUuid(), null);
 
         ObjectImmutableList<String> spawnConditions = null;
         if (ETFConfigData.restrictUpdateProperties) {
@@ -152,7 +152,6 @@ public class ETFTexturePropertyCase {
                 ENTITY_SPAWN_CONDITIONS_CACHE.put(CacheId, spawnConditions);
             }
         }
-
 
 
         boolean wasEntityTestedByAnUpdatableProperty = false;
@@ -166,7 +165,7 @@ public class ETFTexturePropertyCase {
             //String entityBiome = entity.world.getBiome(entity.getBlockPos()).toString();
             //example  "Optional[minecraft:worldgen/biome / minecraft:river]"
             String entityBiome;
-            if (isUpdate && ETFConfigData.restrictBiome && ETFConfigData.restrictUpdateProperties) {
+            if (isUpdate && ETFConfigData.restrictBiome && ETFConfigData.restrictUpdateProperties && spawnConditions !=null && spawnConditions.size() >1) {
                 entityBiome = spawnConditions.get(0).trim();
             } else {
                 entityBiome = entity.world.getBiome(entity.getBlockPos()).getKey().toString().split("\s/\s")[1].replaceAll("[^\\da-zA-Z_:-]", "");
@@ -222,7 +221,7 @@ public class ETFTexturePropertyCase {
                             }
                         }
 
-                        //I do not understand pattern and no-one has ever had a problem with this implementation
+                        //I do not understand pattern in optifine and no-one has ever had a problem with this implementation
                         //is this really it, doesn't feel right???
                     } else if (str.contains("pattern:")) {
                         str = str.replace("?", ".?").replace("*", ".*");
@@ -256,7 +255,7 @@ public class ETFTexturePropertyCase {
         if (doesEntityMeetThisCaseTest && HEIGHT_Y_VALUES.length > 0) {
             if (!ETFConfigData.restrictHeight) wasEntityTestedByAnUpdatableProperty = true;
             int entityHeight;
-            if (isUpdate && ETFConfigData.restrictHeight && ETFConfigData.restrictUpdateProperties) {
+            if (isUpdate && ETFConfigData.restrictHeight && ETFConfigData.restrictUpdateProperties && spawnConditions !=null && spawnConditions.size() >2) {
                 entityHeight = Integer.parseInt(spawnConditions.get(1).trim());
             } else {
                 entityHeight = entity.getBlockY();
@@ -376,7 +375,7 @@ public class ETFTexturePropertyCase {
             if (!ETFConfigData.restrictWeather) wasEntityTestedByAnUpdatableProperty = true;
             boolean raining;
             boolean thundering;
-            if (isUpdate && ETFConfigData.restrictWeather && ETFConfigData.restrictUpdateProperties) {
+            if (isUpdate && ETFConfigData.restrictWeather && ETFConfigData.restrictUpdateProperties && spawnConditions !=null && spawnConditions.size() >=4) {
                 String[] data = spawnConditions.get(3).split("-");
                 raining = data[0].trim().equals("1");
                 thundering = data[1].trim().equals("1");
@@ -422,7 +421,7 @@ public class ETFTexturePropertyCase {
         if (doesEntityMeetThisCaseTest && MOON_PHASE_VALUES.length > 0) {
             if (!ETFConfigData.restrictMoonPhase) wasEntityTestedByAnUpdatableProperty = true;
             int moonPhase;
-            if (isUpdate && ETFConfigData.restrictMoonPhase && ETFConfigData.restrictUpdateProperties) {
+            if (isUpdate && ETFConfigData.restrictMoonPhase && ETFConfigData.restrictUpdateProperties && spawnConditions !=null && spawnConditions.size() > 5) {
                 moonPhase = Integer.parseInt(spawnConditions.get(5).trim());
             } else {
                 moonPhase = entity.world.getMoonPhase();
@@ -441,7 +440,7 @@ public class ETFTexturePropertyCase {
             if (!ETFConfigData.restrictDayTime) wasEntityTestedByAnUpdatableProperty = true;
             long time;
             boolean check = false;
-            if (isUpdate && ETFConfigData.restrictDayTime && ETFConfigData.restrictUpdateProperties) {
+            if (isUpdate && ETFConfigData.restrictDayTime && ETFConfigData.restrictUpdateProperties && spawnConditions !=null && spawnConditions.size() >4) {
                 time = Long.parseLong(spawnConditions.get(4).trim());
             } else {
                 time = entity.world.getTimeOfDay();
@@ -470,7 +469,7 @@ public class ETFTexturePropertyCase {
             //check block
 
             String[] entityOnBlocks;
-            if (isUpdate && ETFConfigData.restrictBlock && ETFConfigData.restrictUpdateProperties) {
+            if (isUpdate && ETFConfigData.restrictBlock && ETFConfigData.restrictUpdateProperties && spawnConditions !=null && spawnConditions.size() > 6) {
                 entityOnBlocks = new String[]{spawnConditions.get(2).trim(), spawnConditions.get(6).trim()};
             } else {
                 String entityOnBlock1 = entity.world.getBlockState(entity.getBlockPos().down()).toString()

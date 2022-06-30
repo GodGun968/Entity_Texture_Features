@@ -21,10 +21,12 @@ import traben.entity_texture_features.texture_handlers.ETFTexture;
 @Mixin(VillagerClothingFeatureRenderer.class)
 public abstract class MixinVillagerClothingFeatureRenderer<T extends LivingEntity & VillagerDataContainer, M extends EntityModel<T> & ModelWithHat> extends FeatureRenderer<T, M> {
 
+    T etf$villager = null;
+    private ETFTexture thisETFTexture = null;
+
     public MixinVillagerClothingFeatureRenderer(FeatureRendererContext<T, M> context) {
         super(context);
     }
-    //todo rewrite
 
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V",
             at = @At(value = "HEAD"))
@@ -32,18 +34,13 @@ public abstract class MixinVillagerClothingFeatureRenderer<T extends LivingEntit
         etf$villager = livingEntity;
     }
 
-    T etf$villager = null;
-
-
-    private ETFTexture thisETFTexture = null;
-
     @Inject(method = "findTexture",
             at = @At(value = "RETURN"), cancellable = true)
     private void etf$returnAlteredTexture(String keyType, Identifier keyId, CallbackInfoReturnable<Identifier> cir) {
         if (etf$villager != null) {
-            thisETFTexture = ETFManager.getETFTexture(cir.getReturnValue(),etf$villager, ETFManager.TextureSource.ENTITY_FEATURE);
-            //just incase
-            if(thisETFTexture != null)
+            thisETFTexture = ETFManager.getETFTexture(cir.getReturnValue(), etf$villager, ETFManager.TextureSource.ENTITY_FEATURE);
+            //just in case
+            if (thisETFTexture != null)
                 cir.setReturnValue(thisETFTexture.getTextureIdentifier(etf$villager));
         }
     }
@@ -53,7 +50,8 @@ public abstract class MixinVillagerClothingFeatureRenderer<T extends LivingEntit
                     shift = At.Shift.AFTER))
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, T livingEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci) {
 
-        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
+        if (thisETFTexture != null)
+            thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, (this.getContextModel()));
     }
 
 }

@@ -66,7 +66,6 @@ public abstract class MixinBedBlockEntityRenderer implements BlockEntityRenderer
             etf$vertexConsumerProviderOfThis = vertexConsumerProvider;
             if (ETFConfigData.enableCustomTextures && ETFConfigData.enableCustomBlockEntities) {
                 etf$bedStandInDummy = new ArmorStandEntity(EntityType.ARMOR_STAND, MinecraftClient.getInstance().world);
-                //System.out.println(MinecraftClient.getInstance().world.getBlockState(bedBlockEntity.getPos().down()).toString());
                 etf$bedStandInDummy.setPos(bedBlockEntity.getPos().getX(), bedBlockEntity.getPos().getY(), bedBlockEntity.getPos().getZ());
                 //chests don't have uuid so set UUID from something repeatable I chose from block pos
                 etf$bedStandInDummy.setUuid(UUID.nameUUIDFromBytes(bedBlockEntity.getPos().toString().getBytes()));
@@ -78,19 +77,10 @@ public abstract class MixinBedBlockEntityRenderer implements BlockEntityRenderer
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;II)V",
                     shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void etf$applyEmissiveBed(MatrixStack matrices, VertexConsumerProvider vertexConsumers, ModelPart part, Direction direction, SpriteIdentifier sprite, int light, int overlay, boolean isFoot, CallbackInfo ci, VertexConsumer vertexConsumer) {
-
         //hopefully works in modded scenarios, assumes the mod dev uses the actual vanilla code process and texture pathing rules
-        //String nameSpace = sprite.getTextureId().getNamespace();
-        //String texturePath = "textures/" + sprite.getTextureId().getPath() + ".png";
-
-        //System.out.println("bed "+nameSpace +":"+texturePath);
-        //Identifier textureID = new Identifier();
-        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null) ) {
-            //ETFUtils.generalEmissiveRenderPart(matrices, vertexConsumers, etf$textureOfThis, part, true);
+        if (!isAnimatedTexture && ETFConfigData.enableEmissiveBlockEntities && (thisETFTexture != null)) {
             thisETFTexture.renderEmissive(matrices, vertexConsumers, part, ETFManager.EmissiveRenderModes.blockEntityMode());
         }
-        //VertexConsumer cons = vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(new Identifier(nameSpace,texturePath), true));
-        //part.render(matrices,cons,15728640,overlay);
     }
 }
 

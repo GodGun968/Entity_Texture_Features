@@ -50,7 +50,7 @@
   "config.etf.enchanted_potion_effects.title": "自定义药水效果",
   "config.etf.enchanted_potion_effects.tooltip": "当前只会在实体第一次出现时生效\n会将附魔实体以除粒子外不同的效果显示",
   "config.etf.enable_tridents.title": "启用自定义三叉戟",
-  "config.etf.enable_tridents.tooltip": "允许三叉戟使用自定义及发光材质\n这项是为了支持未来的CIT模组更新\n材质文件会根据三叉戟物品名选择\n材质“trident_bobbystrident.png”会被名为：\n“Bobby's Trident”，“BoBb%Ys   Trid##en t”，“bobbystrident”的物品选中\n材质“trident_bobbystrident_e.png”将会发光",
+  "config.etf.enable_tridents.tooltip": "允许三叉戟使用自定义及发光材质\n这项是为了支持未来的CIT模组更新\n材质文件会根据三叉戟物品名选择\n材质“trident_bobbystrident.png”会被名为：\n“Bobby's Trident”，“BoBb%Ys   Trid##en t”，“bobbystrident”的物品选中\n材质“trident_bobbys_trident_e.png”将会发光",
   "config.etf.elytra_thickness_fix.title": "鞘翅尺寸修复",
   "config.etf.elytra_thickness_fix.tooltip": "鞘翅的厚度会比它应有的2像素大一点\n这项将会“修复”鞘翅的缩放以更一致\n需要重启或重载（F3 + T）",
   "config.etf.debug_logging_mode.title": "调试日志模式",

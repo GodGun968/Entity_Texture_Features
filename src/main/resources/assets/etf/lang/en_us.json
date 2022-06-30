@@ -50,7 +50,7 @@
   "config.etf.enchanted_potion_effects.title": "Custom potion effects",
   "config.etf.enchanted_potion_effects.tooltip": "currently only works when the mob first loads\nWill display enchanted mobs with different\neffects other than just particles",
   "config.etf.enable_tridents.title": "Enable Custom Tridents",
-  "config.etf.enable_tridents.tooltip": "Allows tridents to use custom & emissive textures\nThis toggle is here to support possible future CIT mod updates\nThe trident item name will choose the texture file to use\nThe texture 'trident_bobbys_trident.png; will be chosen by the names:\n'Bobby's Trident', ' BoBb%Ys   Trid##en t', & 'bobbys_trident'\nThe texture 'trident_bobbystrident_e.png; will be emissive.",
+  "config.etf.enable_tridents.tooltip": "Allows tridents to use custom & emissive textures\nThis toggle is here to support possible future CIT mod updates\nThe trident item name will choose the texture file to use\nThe texture 'trident_bobbys_trident.png; will be chosen by the names:\n'Bobby's Trident', ' BoBb%Ys   Trid##en t', & 'bobbys_trident'\nThe texture 'trident_bobbys_trident_e.png; will be emissive.",
   "config.etf.elytra_thickness_fix.title": "Elytra size fix",
   "config.etf.elytra_thickness_fix.tooltip": "The thickness of Elytra is a bit larger than\nthe 2 pixels it is meant to be.\nThis option will 'fix' the scaling of the Elytra to\nbe more consistent.\nREQUIRES a restart or reload (F3 + T)",
   "config.etf.debug_logging_mode.title": "Debug logging mode",

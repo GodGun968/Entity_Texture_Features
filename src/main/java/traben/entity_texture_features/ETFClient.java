@@ -19,22 +19,13 @@ public class ETFClient implements ClientModInitializer {
     public static final String MOD_ID = "etf";
     //logging object
     public final static Logger LOGGER = LoggerFactory.getLogger("Entity Texture Features");
-    //whether the iris mod was detected on load
-    public static boolean irisDetected = false;
     //config object
     public static ETFConfig ETFConfigData;
 
     @Override
     public void onInitializeClient() {
 
-
         LOGGER.info("Loading! 1.19");
-
-        if (FabricLoader.getInstance().getModContainer("iris").isPresent()) {
-            //LOGGER.info("Iris mod detected : message will be shown in settings");
-            irisDetected = true;
-        }
-
         etf$loadConfig();
     }
 

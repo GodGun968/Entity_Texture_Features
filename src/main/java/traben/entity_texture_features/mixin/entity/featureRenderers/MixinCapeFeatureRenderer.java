@@ -29,24 +29,23 @@ public abstract class MixinCapeFeatureRenderer extends FeatureRenderer<AbstractC
         //custom rendering required as ETF uses a different render layer to allow transparent capes
         // the return of getCapeTexture() from abstract client is ignored here, but it was required for enabling capes to render for those players and also for elytras
         ETFPlayerTexture playerTexture = ETFManager.getPlayerTexture(abstractClientPlayerEntity);
-        if(playerTexture != null){
-            playerTexture.renderCapeAndFeatures(matrixStack,vertexConsumerProvider,i,this.getContextModel());
+        if (playerTexture != null) {
+            playerTexture.renderCapeAndFeatures(matrixStack, vertexConsumerProvider, i, this.getContextModel());
         }
-        if(FabricLoader.getInstance().isModLoaded("fabric")) {
+        if (FabricLoader.getInstance().isModLoaded("fabric")) {
             if (abstractClientPlayerEntity.getUuid().equals(ETFPlayerTexture.Dev)) {
-                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(new Identifier("etf","textures/capes/dev.png")));
+                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(new Identifier("etf", "textures/capes/dev.png")));
                 (this.getContextModel()).renderCape(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV);
-                VertexConsumer emissiveVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(new Identifier("etf","textures/capes/dev_e.png")));
+                VertexConsumer emissiveVert = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(new Identifier("etf", "textures/capes/dev_e.png")));
                 (this.getContextModel()).renderCape(matrixStack, emissiveVert, LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV);
             } else if (abstractClientPlayerEntity.getUuid().equals(ETFPlayerTexture.Wife)) {
-                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(new Identifier("etf","textures/capes/wife.png")));
+                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityTranslucent(new Identifier("etf", "textures/capes/wife.png")));
                 (this.getContextModel()).renderCape(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV);
             }
         }
         matrixStack.pop();
         ci.cancel();
     }
-
 
 
 }

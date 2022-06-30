@@ -22,7 +22,9 @@ import static traben.entity_texture_features.ETFClient.ETFConfigData;
 
 @Mixin(ArmorFeatureRenderer.class)
 public abstract class MixinArmorFeatureRenderer<T extends LivingEntity, M extends BipedEntityModel<T>, A extends BipedEntityModel<T>> extends FeatureRenderer<T, M> {
-    public MixinArmorFeatureRenderer(FeatureRendererContext<T, M> context, Identifier getArmorTexture) {
+    private ETFTexture thisETFTexture = null;
+
+    public MixinArmorFeatureRenderer(FeatureRendererContext<T, M> context) {
         super(context);
     }
 
@@ -30,10 +32,8 @@ public abstract class MixinArmorFeatureRenderer<T extends LivingEntity, M extend
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderLayer;getArmorCutoutNoCull(Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/render/RenderLayer;"))
     private Identifier etf$changetexture(Identifier texture) {
         thisETFTexture = ETFManager.getETFTexture(texture, null, ETFManager.TextureSource.ENTITY_FEATURE);
-        return thisETFTexture.getTextureIdentifier(null,ETFConfigData.enableEmissiveTextures);
+        return thisETFTexture.getTextureIdentifier(null, ETFConfigData.enableEmissiveTextures);
     }
-
-    private ETFTexture thisETFTexture = null;
 
     @Inject(method = "renderArmorParts",
             at = @At(value = "TAIL"))

@@ -21,7 +21,7 @@ import traben.entity_texture_features.texture_handlers.ETFManager;
 import traben.entity_texture_features.texture_handlers.ETFTexture;
 import traben.entity_texture_features.utils.ETFUtils2;
 
-import static traben.entity_texture_features.ETFClient.*;
+import static traben.entity_texture_features.ETFClient.ETFConfigData;
 import static traben.entity_texture_features.texture_handlers.ETFManager.EMISSIVE_SUFFIX_LIST;
 
 @Mixin(MooshroomMushroomFeatureRenderer.class)
@@ -29,11 +29,9 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
 
     private static final Identifier RED_SHROOM = new Identifier("textures/entity/cow/red_mushroom.png");
     private static final Identifier BROWN_SHROOM = new Identifier("textures/entity/cow/brown_mushroom.png");
-
-    private static Identifier redEmissive = null;
-    private  static  Identifier brownEmissive = null;
-
     private static final ModelPart[] shroomAsEntityModel = getModelData();
+    private static Identifier redEmissive = null;
+    private static Identifier brownEmissive = null;
 
     private static ModelPart[] getModelData() {
         Dilation dilation = new Dilation(0);
@@ -108,7 +106,7 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
                     break;
                 }
             }
-            if(!found){
+            if (!found) {
                 return null;
             }
         }
@@ -135,13 +133,13 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
                         }
                     }
                 }
-                Identifier idOfNew = isRed ? new Identifier("etf","red_shroom_alt.png") : new Identifier("etf","brown_shroom_alt.png");
+                Identifier idOfNew = isRed ? new Identifier("etf", "red_shroom_alt.png") : new Identifier("etf", "brown_shroom_alt.png");
                 if (doingEmissive && suffix != null) {
                     Identifier emissive = new Identifier(idOfNew.toString().replace(".png", suffix + ".png"));
                     ETFUtils2.registerNativeImageToIdentifier(newImage, emissive);
-                    if (isRed){
+                    if (isRed) {
                         redEmissive = emissive;
-                    }else{
+                    } else {
                         brownEmissive = emissive;
                     }
                 } else {
@@ -168,7 +166,6 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
     }
 
 
-
     //rewritten as original didn't seem to work, I must have accidentally changed the vanilla mushroom texture when testing originally
     @Inject(method = "renderMushroom", at = @At(value = "HEAD"), cancellable = true)
     private void etf$injected(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, boolean renderAsModel, BlockState mushroomState, int overlay, BakedModel mushroomModel, CallbackInfo ci) {
@@ -176,13 +173,13 @@ public abstract class MixinMooshroomMushroomFeatureRenderer {
         Boolean shroomType = returnRedTrueBrownFalseVanillaNull(mushroomState);
         if (shroomType != null) {
             ETFTexture thisTexture = shroomType ? ETFManager.redMooshroomAlt : ETFManager.brownMooshroomAlt;
-            if (thisTexture!= null) {
+            if (thisTexture != null) {
                 for (ModelPart model :
                         shroomAsEntityModel) {
                     VertexConsumer texturedConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(thisTexture.thisIdentifier));
                     model.render(matrices, texturedConsumer, light, overlay, 1, 1, 1, 1);
 
-                    thisTexture.renderEmissive(matrices, vertexConsumers,model);
+                    thisTexture.renderEmissive(matrices, vertexConsumers, model);
                     //ETFUtils2.generalEmissiveRenderPart(matrices, vertexConsumers, shroomType ? RED_SHROOM_ALT : BROWN_SHROOM_ALT, model, false);
 
                 }

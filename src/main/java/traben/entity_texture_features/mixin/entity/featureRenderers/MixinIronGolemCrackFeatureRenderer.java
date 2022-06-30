@@ -34,7 +34,8 @@ public abstract class MixinIronGolemCrackFeatureRenderer extends FeatureRenderer
 
     private void etf$applyEmissive(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, IronGolemEntity ironGolemEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci, IronGolemEntity.Crack crack, Identifier identifier) {
         //UUID id = livingEntity.getUuid();
-        if (thisETFTexture != null) thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, this.getContextModel());
+        if (thisETFTexture != null)
+            thisETFTexture.renderEmissive(matrixStack, vertexConsumerProvider, this.getContextModel());
     }
 
     @Inject(

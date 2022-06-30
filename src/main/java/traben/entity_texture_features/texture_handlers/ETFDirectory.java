@@ -56,13 +56,13 @@ public enum ETFDirectory {
         ObjectArrayList<ETFDirectory> foundDirectories = new ObjectArrayList<>();
         ResourceManager resources = MinecraftClient.getInstance().getResourceManager();
 
-        if (resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, VANILLA)).isPresent())
+        if (resources.getResource(getIdentifierAsDirectory(vanillaIdentifier, VANILLA)).isPresent())
             foundDirectories.add(VANILLA);
-        if (resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, OLD_OPTIFINE)).isPresent())
+        if (resources.getResource(getIdentifierAsDirectory(vanillaIdentifier, OLD_OPTIFINE)).isPresent())
             foundDirectories.add(OLD_OPTIFINE);
-        if (resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, OPTIFINE)).isPresent())
+        if (resources.getResource(getIdentifierAsDirectory(vanillaIdentifier, OPTIFINE)).isPresent())
             foundDirectories.add(OPTIFINE);
-        if (resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, ETF)).isPresent())
+        if (resources.getResource(getIdentifierAsDirectory(vanillaIdentifier, ETF)).isPresent())
             foundDirectories.add(ETF);
 
         //these are here as these will be 90%+ cases and will be faster
@@ -72,13 +72,13 @@ public enum ETFDirectory {
             return foundDirectories.get(0);
         } else {
             //must be multiple
-            //find the one in the highest resourcepack
+            //find the one in the highest resource-pack
             Object2ReferenceOpenHashMap<String, ETFDirectory> resourcePackNames = new Object2ReferenceOpenHashMap<>();
 
             for (ETFDirectory directory :
                     foundDirectories) {
                 //map result already has internal 0123 order of pack directories ironed out only need to check pack order
-                Optional<Resource> resource = resources.getResource(getIdentiferAsDirectory(vanillaIdentifier, directory));
+                Optional<Resource> resource = resources.getResource(getIdentifierAsDirectory(vanillaIdentifier, directory));
                 resource.ifPresent(value -> resourcePackNames.put(value.getResourcePackName(), directory));
             }
 
@@ -93,7 +93,7 @@ public enum ETFDirectory {
     }
 
     @NotNull
-    public static Identifier getIdentiferAsDirectory(Identifier identifier, ETFDirectory directory) {
+    public static Identifier getIdentifierAsDirectory(Identifier identifier, ETFDirectory directory) {
         if (directory.doesReplace()) {
             return new Identifier(identifier.getNamespace(), identifier.getPath().replace(directory.replaceStrings[0], directory.replaceStrings[1]));
         } else {

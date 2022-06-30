@@ -14,7 +14,8 @@ public record ETFCacheKey(UUID uuid, Identifier identifier) {
         this.uuid = uuid;
         this.identifier = identifier == null ? NULL_IDENTIFIER : identifier;
     }
-    public UUID getMobUUID(){
+
+    public UUID getMobUUID() {
         return this.uuid;
     }
 

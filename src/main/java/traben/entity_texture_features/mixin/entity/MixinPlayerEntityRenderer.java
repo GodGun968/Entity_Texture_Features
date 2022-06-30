@@ -25,6 +25,7 @@ import static traben.entity_texture_features.ETFClient.ETFConfigData;
 @Mixin(PlayerEntityRenderer.class)
 public abstract class MixinPlayerEntityRenderer extends LivingEntityRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
     public int timerBeforeTrySkin = 200;
+
     public MixinPlayerEntityRenderer(EntityRendererFactory.Context ctx, PlayerEntityModel<AbstractClientPlayerEntity> model, float shadowRadius) {
         super(ctx, model, shadowRadius);
     }
@@ -41,9 +42,9 @@ public abstract class MixinPlayerEntityRenderer extends LivingEntityRenderer<Abs
         } else {
             if (ETFConfigData.skinFeaturesEnabled) {
                 ETFPlayerTexture thisETFPlayerTexture = ETFManager.getPlayerTexture(player);
-                if(thisETFPlayerTexture != null) {
+                if (thisETFPlayerTexture != null) {
                     Identifier etfTexture = thisETFPlayerTexture.getBaseTextureIdentifierOrNullForVanilla(player);
-                    if(etfTexture != null) {
+                    if (etfTexture != null) {
                         arm.render(matrices, vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(etfTexture)), light, OverlayTexture.DEFAULT_UV);
                         sleeve.render(matrices, vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(etfTexture)), light, OverlayTexture.DEFAULT_UV);
                         Identifier emissive = thisETFPlayerTexture.getBaseTextureEmissiveIdentifierOrNullForNone();
