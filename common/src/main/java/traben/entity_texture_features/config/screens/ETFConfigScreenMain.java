@@ -89,7 +89,7 @@ public class ETFConfigScreenMain extends ETFConfigScreen {
                 (button) -> {
                    // temporaryETFConfig = new ETFConfig();
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenMain(parent,new ETFConfig()));
-                    this.close();
+                    this.onClose();
                 }));
         this.addDrawableChild(new ButtonWidget((int) (this.width * 0.1), (int) (this.height * 0.9), (int) (this.width * 0.2), 20,
                 ScreenTexts.CANCEL,

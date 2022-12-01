@@ -37,7 +37,7 @@ public class ETFConfigScreenBlinkSettings extends ETFConfigScreen {
 
 
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenBlinkSettings(parent));
-                    this.close();
+                    this.onClose();
                 }));
 
         this.addDrawableChild(getETFButton((int) (this.width * 0.025), (int) (this.height * 0.2), (int) (this.width * 0.45), 20,

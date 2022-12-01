@@ -32,7 +32,7 @@ public abstract class ETFConfigScreen extends Screen {
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         assert this.client != null;
         this.client.setScreen(parent);
     }

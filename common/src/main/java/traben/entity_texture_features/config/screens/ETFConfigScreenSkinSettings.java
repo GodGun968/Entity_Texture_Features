@@ -36,7 +36,7 @@ public class ETFConfigScreenSkinSettings extends ETFConfigScreen {
                     ETFConfigScreenMain.temporaryETFConfig.skinFeaturesEnableTransparency = true;
                     ETFConfigScreenMain.temporaryETFConfig.enableEnemyTeamPlayersSkinFeatures = true;
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenSkinSettings(parent));
-                    this.close();
+                    this.onClose();
                 }));
 
         this.addDrawableChild(getETFButton((int) (this.width * 0.025), (int) (this.height * 0.2), (int) (this.width * 0.45), 20,

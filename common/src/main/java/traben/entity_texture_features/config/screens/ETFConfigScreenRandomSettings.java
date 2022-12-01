@@ -1,9 +1,8 @@
 package traben.entity_texture_features.config.screens;
 
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gui.screen.ScreenTexts;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import traben.entity_texture_features.ETFClientCommon;
 import traben.entity_texture_features.ETFVersionDifferenceHandler;
@@ -41,7 +40,7 @@ public class ETFConfigScreenRandomSettings extends ETFConfigScreen {
                     ETFConfigScreenMain.temporaryETFConfig.restrictBlock = true;
                     ETFConfigScreenMain.temporaryETFConfig.restrictHeight = true;
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenRandomSettings(parent));
-                    this.close();
+                    this.onClose();
                 }));
 
         this.addDrawableChild(getETFButton((int) (this.width * 0.2), (int) (this.height * 0.2), (int) (this.width * 0.6), 20,

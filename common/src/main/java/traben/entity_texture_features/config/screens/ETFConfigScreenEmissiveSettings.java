@@ -36,7 +36,7 @@ public class ETFConfigScreenEmissiveSettings extends ETFConfigScreen {
                     ETFConfigScreenMain.temporaryETFConfig.specialEmissiveShield = true;
                     ETFConfigScreenMain.temporaryETFConfig.enableEmissiveBlockEntities = true;
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenEmissiveSettings(parent));
-                    this.close();
+                    this.onClose();
                 }));
 
         this.addDrawableChild(getETFButton((int) (this.width * 0.025), (int) (this.height * 0.3), (int) (this.width * 0.45), 20,

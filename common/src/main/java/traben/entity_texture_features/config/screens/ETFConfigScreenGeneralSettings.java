@@ -35,7 +35,7 @@ public class ETFConfigScreenGeneralSettings extends ETFConfigScreen {
                     //ETFConfigScreenMain.temporaryETFConfig.zombiePiglinRightEarEnabled = false;
                     //ETFConfigScreenMain.temporaryETFConfig.temporary_fixIrisPBR = false;
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenGeneralSettings(parent));
-                    this.close();
+                    this.onClose();
                 }));
 
         this.addDrawableChild(getETFButton((int) (this.width * 0.2), (int) (this.height * 0.2), (int) (this.width * 0.6), 20,

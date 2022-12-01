@@ -35,7 +35,7 @@ public class ETFConfigScreenWarnings extends ETFConfigScreen {
                     ETFConfigScreenMain.temporaryETFConfig.ignoredConfigs.addAll(List.of(ConfigWarning.values()));
 
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenWarnings(parent,warningsFound));
-                    this.close();
+                    this.onClose();
                 }));
 
         double offset = 0.0;

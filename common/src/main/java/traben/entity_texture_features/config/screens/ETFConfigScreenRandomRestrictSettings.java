@@ -37,7 +37,7 @@ public class ETFConfigScreenRandomRestrictSettings extends ETFConfigScreen {
                     ETFConfigScreenMain.temporaryETFConfig.restrictBlock = true;
                     ETFConfigScreenMain.temporaryETFConfig.restrictHeight = true;
                     Objects.requireNonNull(client).setScreen(new ETFConfigScreenRandomRestrictSettings(parent));
-                    this.close();
+                    this.onClose();
                     //Objects.requireNonNull(client).setScreen(parent);
                 }));
 

@@ -90,9 +90,9 @@ public class ETFConfigScreenSkinTool extends ETFConfigScreen {
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         onExit();
-        super.close();
+        super.onClose();
     }
 
     @Override
